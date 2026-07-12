@@ -126,7 +126,7 @@ export async function crearPaciente(formData: FormData): Promise<ResultadoAccion
     return { ok: false, error: parseo.error.issues[0]?.message ?? "Datos inválidos." };
   }
 
-  const supabase = createClient();
+  const supabase = await createClient();
   const { data, error } = await supabase
     .from("pacientes")
     .insert({ ...aFila(parseo.data), created_by: usuaria.id } as never)
@@ -165,7 +165,7 @@ export async function actualizarPaciente(
     return { ok: false, error: parseo.error.issues[0]?.message ?? "Datos inválidos." };
   }
 
-  const supabase = createClient();
+  const supabase = await createClient();
   const { error } = await supabase
     .from("pacientes")
     .update(aFila(parseo.data) as never)
@@ -198,7 +198,7 @@ export async function alternarActivoPaciente(
     return { ok: false, error: "No tienes permiso para esta acción." };
   }
 
-  const supabase = createClient();
+  const supabase = await createClient();
   const { error } = await supabase.from("pacientes").update({ activo } as never).eq("id", id);
   if (error) return { ok: false, error: "No se pudo actualizar el estado." };
 
@@ -245,7 +245,7 @@ export async function crearEstudio(
     return { ok: false, error: parseo.error.issues[0]?.message ?? "Datos inválidos." };
   }
 
-  const supabase = createClient();
+  const supabase = await createClient();
 
   // Carga opcional de archivo (PDF o imagen) al bucket privado.
   let archivo_path: string | null = null;
@@ -314,7 +314,7 @@ export async function eliminarEstudio(
     return { ok: false, error: "No tienes permiso para eliminar estudios." };
   }
 
-  const supabase = createClient();
+  const supabase = await createClient();
 
   // Recuperar la ruta del archivo para borrarlo del Storage.
   const { data: estudio } = await supabase

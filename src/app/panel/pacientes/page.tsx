@@ -13,11 +13,12 @@ export const metadata: Metadata = { title: "Pacientes" };
 export default async function PacientesPage({
   searchParams,
 }: {
-  searchParams: { q?: string };
+  searchParams: Promise<{ q?: string }>;
 }) {
+  const { q: qRaw } = await searchParams;
   const usuaria = await requerirUsuaria();
-  const supabase = createClient();
-  const q = (searchParams.q ?? "").trim();
+  const supabase = await createClient();
+  const q = (qRaw ?? "").trim();
 
   let consulta = supabase
     .from("pacientes")

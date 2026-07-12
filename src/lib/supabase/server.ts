@@ -8,8 +8,8 @@ import type { Database } from "@/types/database";
  * Mantiene la sesión sincronizada mediante cookies. Usa la anon key:
  * respeta RLS con la identidad de la usuaria autenticada.
  */
-export function createClient() {
-  const cookieStore = cookies();
+export async function createClient() {
+  const cookieStore = await cookies();
 
   return createServerClient<Database>(
     env.SUPABASE_URL,

@@ -16,8 +16,9 @@ export const runtime = "nodejs";
 
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } },
+  { params }: { params: Promise<{ id: string }> },
 ) {
+  const { id } = await params;
   const guard = await requerirApi("admin");
   if (!guard.ok) return guard.respuesta;
 
@@ -40,7 +41,7 @@ export async function PATCH(
   const { error } = await admin
     .from("profiles")
     .update(parseo.data)
-    .eq("id", params.id);
+    .eq("id", id);
 
   if (error) {
     // El trigger devuelve estos códigos al proteger al último admin.
@@ -62,7 +63,7 @@ export async function PATCH(
     actorEmail: guard.usuaria.email,
     accion: "actualizar_usuaria",
     entidad: "profiles",
-    entidadId: params.id,
+    entidadId: id,
     metadata: { ...parseo.data },
     ip: ipDePeticion(request),
   });
@@ -72,13 +73,14 @@ export async function PATCH(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } },
+  { params }: { params: Promise<{ id: string }> },
 ) {
+  const { id } = await params;
   const guard = await requerirApi("admin");
   if (!guard.ok) return guard.respuesta;
 
   // No permitir auto-eliminación (defensa adicional de UX).
-  if (params.id === guard.usuaria.id) {
+  if (id === guard.usuaria.id) {
     return NextResponse.json(
       { error: "No puedes eliminar tu propia cuenta." },
       { status: 409 },
@@ -89,7 +91,7 @@ export async function DELETE(
 
   // El borrado en Auth cascadea a profiles y dispara el trigger que
   // protege al último administrador activo.
-  const { error } = await admin.auth.admin.deleteUser(params.id);
+  const { error } = await admin.auth.admin.deleteUser(id);
 
   if (error) {
     const esProteccion = error.message
@@ -110,7 +112,7 @@ export async function DELETE(
     actorEmail: guard.usuaria.email,
     accion: "eliminar_usuaria",
     entidad: "profiles",
-    entidadId: params.id,
+    entidadId: id,
     ip: ipDePeticion(request),
   });
 

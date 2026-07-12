@@ -36,15 +36,16 @@ function Dato({ etiqueta, valor }: { etiqueta: string; valor: string | null }) {
 export default async function FichaPacientePage({
   params,
 }: {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }) {
+  const { id } = await params;
   const usuaria = await requerirUsuaria();
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const { data } = await supabase
     .from("pacientes")
     .select("*")
-    .eq("id", params.id)
+    .eq("id", id)
     .single();
 
   if (!data) notFound();

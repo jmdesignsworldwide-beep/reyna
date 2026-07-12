@@ -11,9 +11,9 @@ export const ETIQUETAS_ROL: Record<UserRole, string> = {
 };
 
 export const DESCRIPCION_ROL: Record<UserRole, string> = {
-  admin: "Acceso total: pacientes, agenda, finanzas, reportes y usuarias.",
-  recepcion: "Pacientes y agenda. Sin acceso a finanzas.",
-  asistente: "Permisos acotados de apoyo clínico.",
+  admin: "Acceso total: pacientes, agenda, historia clínica, dashboard y usuarias.",
+  recepcion: "Pacientes y agenda. Consulta de estudios.",
+  asistente: "Apoyo clínico: pacientes y estudios cardiológicos.",
 };
 
 export const ROLES: UserRole[] = ["admin", "recepcion", "asistente"];
@@ -30,7 +30,6 @@ const MATRIZ: Record<UserRole, Record<string, Accion[]>> = {
     pacientes: ["ver", "crear", "editar", "borrar"],
     estudios: ["ver", "crear", "editar", "borrar"],
     agenda: ["ver", "crear", "editar", "borrar"],
-    finanzas: ["ver", "crear", "editar", "borrar"],
     usuarios: ["ver", "crear", "editar", "borrar"],
     auditoria: ["ver"],
   },

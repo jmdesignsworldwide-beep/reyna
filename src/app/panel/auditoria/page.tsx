@@ -22,7 +22,7 @@ const ETIQUETA_ACCION: Record<string, string> = {
 
 export default async function AuditoriaPage() {
   await requerirRol("admin");
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const { data: eventos } = await supabase
     .from("audit_log")

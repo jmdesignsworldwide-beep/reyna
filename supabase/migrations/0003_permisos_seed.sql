@@ -8,28 +8,25 @@
 --   asistente  → Enfermera: permisos acotados (lectura de apoyo).
 -- ============================================================
 
+-- Alcance del sistema: 4 módulos (Pacientes, Agenda, Historia clínica
+-- cardiológica = 'estudios', Dashboard) + infraestructura (usuarios, auditoría).
+-- Sin finanzas, nómina ni reportes: fuera de alcance por diseño.
 insert into public.role_permissions (rol, recurso, puede_ver, puede_crear, puede_editar, puede_borrar) values
   -- Administradora / Dra. Reyna
   ('admin', 'pacientes',  true, true, true, true),
   ('admin', 'agenda',     true, true, true, true),
-  ('admin', 'finanzas',   true, true, true, true),
-  ('admin', 'reportes',   true, true, true, true),
   ('admin', 'usuarios',   true, true, true, true),
   ('admin', 'auditoria',  true, false, false, false),
 
-  -- Recepción / Secretaria (sin finanzas)
+  -- Recepción / Secretaria
   ('recepcion', 'pacientes', true, true, true, false),
   ('recepcion', 'agenda',    true, true, true, true),
-  ('recepcion', 'finanzas',  false, false, false, false),
-  ('recepcion', 'reportes',  false, false, false, false),
   ('recepcion', 'usuarios',  false, false, false, false),
   ('recepcion', 'auditoria', false, false, false, false),
 
   -- Asistente / Enfermera (permisos acotados)
   ('asistente', 'pacientes', true, false, true, false),
   ('asistente', 'agenda',    true, false, false, false),
-  ('asistente', 'finanzas',  false, false, false, false),
-  ('asistente', 'reportes',  false, false, false, false),
   ('asistente', 'usuarios',  false, false, false, false),
   ('asistente', 'auditoria', false, false, false, false)
 on conflict (rol, recurso) do update set

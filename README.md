@@ -3,7 +3,9 @@
 Cardiología · Medicina interna · Ecocardiografía · República Dominicana
 Desarrollado por **JM Designs Worldwide**.
 
-Stack: **Next.js 14 (App Router) · TypeScript · Tailwind CSS · Supabase** (Postgres + Auth + RLS). Deploy en Vercel.
+Stack: **Next.js 15 (App Router) · TypeScript · Tailwind CSS · Supabase** (Postgres + Auth + Storage + RLS). Deploy en Vercel.
+
+**Alcance (acotado):** 4 módulos premium — **Pacientes**, **Agenda de citas**, **Historia clínica cardiológica** y **Dashboard**. Sin portal del paciente, panel financiero, nóminas ni IA externa.
 
 ---
 
@@ -37,6 +39,9 @@ Base funcional con seguridad Fort Knox horneada desde la línea uno:
 - **Rate limiting server-side** respaldado en Postgres (compartido entre instancias, falla cerrado).
 - **Anti-enumeración de cuentas** en la recuperación de contraseña.
 - **Contraseñas robustas**: mínimo 10 caracteres con mayúscula, minúscula y número.
+- **Dependencias limpias**: `npm audit` sin vulnerabilidades (Next.js 15 + `overrides` de `postcss`).
+
+Tras aplicar las migraciones, ejecuta [`supabase/verificacion_advisor.sql`](./supabase/verificacion_advisor.sql) para confirmar RLS+FORCE, políticas, `search_path` de funciones y el bucket privado de Storage.
 
 ---
 

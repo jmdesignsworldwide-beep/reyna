@@ -14,10 +14,11 @@ export const metadata: Metadata = { title: "Mi cuenta" };
 export default async function CuentaPage({
   searchParams,
 }: {
-  searchParams: { recuperar?: string };
+  searchParams: Promise<{ recuperar?: string }>;
 }) {
+  const { recuperar } = await searchParams;
   const usuaria = await requerirUsuaria();
-  const enRecuperacion = searchParams.recuperar === "1";
+  const enRecuperacion = recuperar === "1";
 
   return (
     <div className="space-y-6">

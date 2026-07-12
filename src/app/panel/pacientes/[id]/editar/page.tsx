@@ -13,18 +13,19 @@ export const metadata: Metadata = { title: "Editar paciente" };
 export default async function EditarPacientePage({
   params,
 }: {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }) {
+  const { id } = await params;
   const usuaria = await requerirUsuaria();
   if (!puedeUI(usuaria.rol, "pacientes", "editar")) {
-    redirect(`/panel/pacientes/${params.id}`);
+    redirect(`/panel/pacientes/${id}`);
   }
 
-  const supabase = createClient();
+  const supabase = await createClient();
   const { data } = await supabase
     .from("pacientes")
     .select("*")
-    .eq("id", params.id)
+    .eq("id", id)
     .single();
 
   if (!data) notFound();

@@ -17,7 +17,7 @@ export interface UsuariaActual {
  * getUser() valida el token contra Supabase (no confía solo en la cookie).
  */
 export async function obtenerUsuaria(): Promise<UsuariaActual | null> {
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const {
     data: { user },

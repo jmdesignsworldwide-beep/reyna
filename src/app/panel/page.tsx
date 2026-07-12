@@ -8,7 +8,7 @@ import { formatearFechaHora } from "@/lib/formato";
 
 export default async function PanelInicio() {
   const usuaria = await requerirUsuaria();
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const esAdmin = usuaria.rol === "admin";
 
@@ -166,8 +166,8 @@ export default async function PanelInicio() {
 }
 
 const PROXIMOS = [
-  "Módulo de pacientes con cédula, ARS y expediente clínico.",
+  "Pacientes: expediente cardiológico con factores de riesgo y estudios.",
   "Agenda de citas con recordatorios.",
-  "Ecocardiogramas e informes.",
-  "Finanzas y facturación (solo administración).",
+  "Historia clínica cardiológica.",
+  "Dashboard con indicadores de la consulta.",
 ];
