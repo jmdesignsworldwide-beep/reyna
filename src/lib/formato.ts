@@ -10,6 +10,17 @@ export function formatearFecha(iso: string | Date): string {
   return `${dia}/${mes}/${anio}`;
 }
 
+export function calcularEdad(fechaNacimiento: string | null): number | null {
+  if (!fechaNacimiento) return null;
+  const nac = new Date(fechaNacimiento);
+  if (Number.isNaN(nac.getTime())) return null;
+  const hoy = new Date();
+  let edad = hoy.getFullYear() - nac.getFullYear();
+  const m = hoy.getMonth() - nac.getMonth();
+  if (m < 0 || (m === 0 && hoy.getDate() < nac.getDate())) edad--;
+  return edad >= 0 ? edad : null;
+}
+
 export function formatearFechaHora(iso: string | Date): string {
   const d = typeof iso === "string" ? new Date(iso) : iso;
   let horas = d.getHours();

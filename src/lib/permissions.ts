@@ -18,6 +18,36 @@ export const DESCRIPCION_ROL: Record<UserRole, string> = {
 
 export const ROLES: UserRole[] = ["admin", "recepcion", "asistente"];
 
+export type Accion = "ver" | "crear" | "editar" | "borrar";
+
+/**
+ * Espejo de la matriz `role_permissions` de la base de datos, para gatear la
+ * UI. La autoridad real es la RLS server-side (función `puede`); esto solo
+ * evita mostrar controles que el servidor rechazaría.
+ */
+const MATRIZ: Record<UserRole, Record<string, Accion[]>> = {
+  admin: {
+    pacientes: ["ver", "crear", "editar", "borrar"],
+    agenda: ["ver", "crear", "editar", "borrar"],
+    finanzas: ["ver", "crear", "editar", "borrar"],
+    usuarios: ["ver", "crear", "editar", "borrar"],
+    auditoria: ["ver"],
+  },
+  recepcion: {
+    pacientes: ["ver", "crear", "editar"],
+    agenda: ["ver", "crear", "editar", "borrar"],
+  },
+  asistente: {
+    pacientes: ["ver", "editar"],
+    agenda: ["ver"],
+  },
+};
+
+/** ¿El rol puede realizar la acción sobre el recurso? (solo para gatear UI). */
+export function puedeUI(rol: UserRole, recurso: string, accion: Accion): boolean {
+  return MATRIZ[rol]?.[recurso]?.includes(accion) ?? false;
+}
+
 export interface ItemNavegacion {
   href: string;
   etiqueta: string;
@@ -38,6 +68,13 @@ export const NAVEGACION: ItemNavegacion[] = [
     recurso: "inicio",
     roles: ["admin", "recepcion", "asistente"],
     icono: "inicio",
+  },
+  {
+    href: "/panel/pacientes",
+    etiqueta: "Pacientes",
+    recurso: "pacientes",
+    roles: ["admin", "recepcion", "asistente"],
+    icono: "pacientes",
   },
   {
     href: "/panel/usuarios",

@@ -15,6 +15,32 @@ export type Json =
 
 export type UserRole = "admin" | "recepcion" | "asistente";
 
+export type SexoPaciente = "femenino" | "masculino";
+
+export type Paciente = {
+  id: string;
+  nombres: string;
+  apellidos: string;
+  cedula: string | null;
+  fecha_nacimiento: string | null;
+  sexo: SexoPaciente | null;
+  telefono: string | null;
+  correo: string | null;
+  direccion: string | null;
+  ars: string | null;
+  numero_afiliado: string | null;
+  tipo_sangre: string | null;
+  alergias: string | null;
+  antecedentes: string | null;
+  contacto_emergencia_nombre: string | null;
+  contacto_emergencia_telefono: string | null;
+  notas: string | null;
+  activo: boolean;
+  created_by: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
 // Se usan `type` (no `interface`) a propósito: los alias de tipo son
 // asignables a Record<string, unknown> que exige GenericSchema de Supabase;
 // las interfaces no lo son (les falta la index signature implícita).
@@ -111,6 +137,53 @@ export interface Database {
         Update: { hits?: number };
         Relationships: [];
       };
+      pacientes: {
+        Row: Paciente;
+        Insert: {
+          id?: string;
+          nombres: string;
+          apellidos: string;
+          cedula?: string | null;
+          fecha_nacimiento?: string | null;
+          sexo?: SexoPaciente | null;
+          telefono?: string | null;
+          correo?: string | null;
+          direccion?: string | null;
+          ars?: string | null;
+          numero_afiliado?: string | null;
+          tipo_sangre?: string | null;
+          alergias?: string | null;
+          antecedentes?: string | null;
+          contacto_emergencia_nombre?: string | null;
+          contacto_emergencia_telefono?: string | null;
+          notas?: string | null;
+          activo?: boolean;
+          created_by?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          nombres?: string;
+          apellidos?: string;
+          cedula?: string | null;
+          fecha_nacimiento?: string | null;
+          sexo?: SexoPaciente | null;
+          telefono?: string | null;
+          correo?: string | null;
+          direccion?: string | null;
+          ars?: string | null;
+          numero_afiliado?: string | null;
+          tipo_sangre?: string | null;
+          alergias?: string | null;
+          antecedentes?: string | null;
+          contacto_emergencia_nombre?: string | null;
+          contacto_emergencia_telefono?: string | null;
+          notas?: string | null;
+          activo?: boolean;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
     };
     Views: { [_ in never]: never };
     Functions: {
@@ -118,6 +191,10 @@ export interface Database {
       current_user_role: {
         Args: Record<PropertyKey, never>;
         Returns: UserRole;
+      };
+      puede: {
+        Args: { p_recurso: string; p_accion: string };
+        Returns: boolean;
       };
       count_active_admins: {
         Args: Record<PropertyKey, never>;
@@ -139,6 +216,7 @@ export interface Database {
     };
     Enums: {
       user_role: UserRole;
+      sexo_paciente: SexoPaciente;
     };
     CompositeTypes: { [_ in never]: never };
   };

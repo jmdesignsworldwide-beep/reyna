@@ -12,6 +12,10 @@ const ETIQUETA_ACCION: Record<string, string> = {
   actualizar_usuaria: "Actualizó una cuenta",
   eliminar_usuaria: "Eliminó una cuenta",
   cambiar_clave: "Cambió su contraseña",
+  crear_paciente: "Registró un paciente",
+  actualizar_paciente: "Actualizó un paciente",
+  archivar_paciente: "Archivó un paciente",
+  reactivar_paciente: "Reactivó un paciente",
 };
 
 export default async function AuditoriaPage() {

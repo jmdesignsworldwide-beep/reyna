@@ -8,6 +8,7 @@ Se aplican en orden. Todas las tablas nacen con **RLS + FORCE ROW LEVEL SECURITY
 1. `0001_esquema.sql` — Tipos, tablas (`profiles`, `audit_log`, `role_permissions`, `rate_limits`), funciones y triggers.
 2. `0002_politicas.sql` — Políticas RLS (negar por defecto).
 3. `0003_permisos_seed.sql` — Matriz de permisos por rol.
+4. `0004_pacientes.sql` — Tabla `pacientes`, función `puede()` y RLS atada a la matriz de permisos.
 
 ## Cómo aplicarlas
 

@@ -12,6 +12,12 @@ export default async function PanelInicio() {
 
   const esAdmin = usuaria.rol === "admin";
 
+  // Pacientes activos: visible para todos los roles (todos tienen 'ver').
+  const { count: totalPacientes } = await supabase
+    .from("pacientes")
+    .select("id", { count: "exact", head: true })
+    .eq("activo", true);
+
   // Datos reales (RLS filtra por rol automáticamente).
   let totalUsuarias = 0;
   let totalAdmins = 0;
@@ -56,27 +62,36 @@ export default async function PanelInicio() {
         </p>
       </header>
 
-      {esAdmin && (
-        <section className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+      <section className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+        <Link href="/panel/pacientes" className="block">
           <CardEstadistica
-            etiqueta="Usuarias del sistema"
-            valor={totalUsuarias}
-            detalle="Cuentas registradas"
+            etiqueta="Pacientes activos"
+            valor={totalPacientes ?? 0}
+            detalle="Ver expediente →"
           />
+        </Link>
+        {esAdmin && (
+          <>
+            <CardEstadistica
+              etiqueta="Usuarias del sistema"
+              valor={totalUsuarias}
+              detalle="Cuentas registradas"
+            />
           <CardEstadistica
             etiqueta="Administradoras activas"
             valor={totalAdmins}
             detalle="Protección del último admin activa"
             color="var(--rosa-hover)"
           />
-          <CardEstadistica
-            etiqueta="Eventos auditados"
-            valor={ultimaActividad.length > 0 ? "Activa" : "—"}
-            detalle="Bitácora en funcionamiento"
-            color="#4CAF82"
-          />
-        </section>
-      )}
+            <CardEstadistica
+              etiqueta="Eventos auditados"
+              valor={ultimaActividad.length > 0 ? "Activa" : "—"}
+              detalle="Bitácora en funcionamiento"
+              color="#4CAF82"
+            />
+          </>
+        )}
+      </section>
 
       <section className="grid gap-6 lg:grid-cols-3">
         <Card className="lg:col-span-2">

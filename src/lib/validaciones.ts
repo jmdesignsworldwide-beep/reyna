@@ -47,3 +47,37 @@ export const claveRecuperacionSchema = z.object({
 });
 
 export type CrearUsuaria = z.infer<typeof crearUsuariaSchema>;
+
+// ---------- Pacientes ----------
+const textoOpcional = (max: number) =>
+  z.string().trim().max(max).optional().or(z.literal(""));
+
+export const pacienteSchema = z.object({
+  nombres: z.string().trim().min(2, "Los nombres son obligatorios.").max(80),
+  apellidos: z.string().trim().min(2, "Los apellidos son obligatorios.").max(80),
+  cedula: textoOpcional(20),
+  fecha_nacimiento: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/, "Fecha inválida.")
+    .optional()
+    .or(z.literal("")),
+  sexo: z.enum(["femenino", "masculino"]).optional().or(z.literal("")),
+  telefono: textoOpcional(20),
+  correo: z
+    .string()
+    .trim()
+    .email("Correo inválido.")
+    .optional()
+    .or(z.literal("")),
+  direccion: textoOpcional(200),
+  ars: textoOpcional(80),
+  numero_afiliado: textoOpcional(40),
+  tipo_sangre: textoOpcional(8),
+  alergias: textoOpcional(500),
+  antecedentes: textoOpcional(1000),
+  contacto_emergencia_nombre: textoOpcional(80),
+  contacto_emergencia_telefono: textoOpcional(20),
+  notas: textoOpcional(1000),
+});
+
+export type PacienteInput = z.infer<typeof pacienteSchema>;

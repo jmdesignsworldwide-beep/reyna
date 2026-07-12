@@ -19,6 +19,13 @@ Base funcional con seguridad Fort Knox horneada desde la línea uno:
 
 ---
 
+## Estado — Tanda 2: Módulo de pacientes
+
+- **Expediente de pacientes** con datos personales, contacto, seguro (ARS), información clínica (alergias, antecedentes) y contacto de emergencia.
+- **Búsqueda** por nombre, apellido o cédula.
+- **Alta, ficha y edición** con permisos por rol atados a la matriz `role_permissions` vía RLS (función `puede()`): admin (todo), recepción (crear/editar), asistente (ver/editar acotado). Archivar/reactivar en lugar de borrado destructivo.
+- Todas las acciones pasan por **Server Actions** con verificación de rol, rate limiting y auditoría.
+
 ## Seguridad (Fort Knox)
 
 - **RLS + FORCE ROW LEVEL SECURITY** en todas las tablas; políticas que niegan por defecto.
