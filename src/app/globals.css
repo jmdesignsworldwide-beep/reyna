@@ -1,0 +1,136 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ============================================================
+   Tokens de marca — Dra. Reyna Massiel
+   Modo claro y oscuro. La clase .dark la aplica ThemeProvider.
+   ============================================================ */
+:root {
+  --fondo: #fffaf7;          /* Crema */
+  --superficie: #ffffff;
+  --superficie-suave: #fdeef3; /* Rosa claro */
+  --tarjeta: #fbe4ec;        /* Rosa pastel */
+  --borde: rgba(177, 74, 115, 0.12);
+  --texto-principal: #5a4a52;
+  --texto-secundario: #8a6b78;
+  --rosa-principal: #b14a73;
+  --rosa-medio: #c25a82;
+  --rosa-hover: #e87fa6;
+  --aurora-1: rgba(232, 127, 166, 0.28);
+  --aurora-2: rgba(251, 228, 236, 0.7);
+  --aurora-3: rgba(255, 250, 247, 0.5);
+}
+
+.dark {
+  --fondo: #241a20;
+  --superficie: #2e222a;
+  --superficie-suave: #362630;
+  --tarjeta: #33232d;
+  --borde: rgba(232, 127, 166, 0.16);
+  --texto-principal: #f3e3ea;
+  --texto-secundario: #c9a7b6;
+  --rosa-principal: #e87fa6;
+  --rosa-medio: #d76e97;
+  --rosa-hover: #f3a0c0;
+  --aurora-1: rgba(177, 74, 115, 0.35);
+  --aurora-2: rgba(96, 40, 62, 0.55);
+  --aurora-3: rgba(36, 26, 32, 0.6);
+}
+
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    background-color: var(--fondo);
+    color: var(--texto-principal);
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+    transition: background-color 0.4s ease, color 0.4s ease;
+  }
+
+  ::selection {
+    background: var(--rosa-hover);
+    color: #fff;
+  }
+
+  /* Foco visible y en marca — accesibilidad + Fort Knox de UX */
+  :focus-visible {
+    outline: 2px solid var(--rosa-hover);
+    outline-offset: 2px;
+    border-radius: 6px;
+  }
+
+  /* Scrollbar sutil */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--rosa-hover) transparent;
+  }
+}
+
+@layer components {
+  .superficie {
+    background-color: var(--superficie);
+    border: 1px solid var(--borde);
+  }
+
+  .tarjeta {
+    background-color: var(--superficie);
+    border: 1px solid var(--borde);
+    border-radius: 16px;
+    box-shadow: 0 4px 20px -6px rgba(177, 74, 115, 0.18);
+    transition: box-shadow 0.35s ease, transform 0.35s ease,
+      border-color 0.35s ease;
+  }
+
+  .tarjeta-interactiva:hover {
+    box-shadow: 0 10px 32px -8px rgba(177, 74, 115, 0.28);
+    transform: translateY(-2px);
+    border-color: rgba(232, 127, 166, 0.35);
+  }
+
+  .texto-degradado {
+    background: linear-gradient(
+      120deg,
+      var(--rosa-principal),
+      var(--rosa-hover)
+    );
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  .campo {
+    width: 100%;
+    background-color: var(--superficie-suave);
+    border: 1px solid var(--borde);
+    border-radius: 12px;
+    padding: 0.7rem 0.9rem;
+    color: var(--texto-principal);
+    transition: border-color 0.25s ease, box-shadow 0.25s ease,
+      background-color 0.25s ease;
+  }
+
+  .campo::placeholder {
+    color: var(--texto-secundario);
+    opacity: 0.7;
+  }
+
+  .campo:focus {
+    outline: none;
+    border-color: var(--rosa-hover);
+    box-shadow: 0 0 0 3px rgba(232, 127, 166, 0.18);
+  }
+}
+
+/* Respeto por quienes prefieren menos movimiento */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}

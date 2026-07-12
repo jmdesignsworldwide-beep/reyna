@@ -1,0 +1,102 @@
+import type { UserRole } from "@/types/database";
+
+/**
+ * Metadatos de roles para la interfaz. La autoridad real vive en la base
+ * de datos (RLS + role_permissions); esto es solo presentación.
+ */
+export const ETIQUETAS_ROL: Record<UserRole, string> = {
+  admin: "Administradora",
+  recepcion: "Recepción",
+  asistente: "Asistente",
+};
+
+export const DESCRIPCION_ROL: Record<UserRole, string> = {
+  admin: "Acceso total: pacientes, agenda, historia clínica, dashboard y usuarias.",
+  recepcion: "Pacientes y agenda. Consulta de estudios.",
+  asistente: "Apoyo clínico: pacientes y estudios cardiológicos.",
+};
+
+export const ROLES: UserRole[] = ["admin", "recepcion", "asistente"];
+
+export type Accion = "ver" | "crear" | "editar" | "borrar";
+
+/**
+ * Espejo de la matriz `role_permissions` de la base de datos, para gatear la
+ * UI. La autoridad real es la RLS server-side (función `puede`); esto solo
+ * evita mostrar controles que el servidor rechazaría.
+ */
+const MATRIZ: Record<UserRole, Record<string, Accion[]>> = {
+  admin: {
+    pacientes: ["ver", "crear", "editar", "borrar"],
+    estudios: ["ver", "crear", "editar", "borrar"],
+    agenda: ["ver", "crear", "editar", "borrar"],
+    usuarios: ["ver", "crear", "editar", "borrar"],
+    auditoria: ["ver"],
+  },
+  recepcion: {
+    pacientes: ["ver", "crear", "editar"],
+    estudios: ["ver"],
+    agenda: ["ver", "crear", "editar", "borrar"],
+  },
+  asistente: {
+    pacientes: ["ver", "editar"],
+    estudios: ["ver", "crear", "editar"],
+    agenda: ["ver"],
+  },
+};
+
+/** ¿El rol puede realizar la acción sobre el recurso? (solo para gatear UI). */
+export function puedeUI(rol: UserRole, recurso: string, accion: Accion): boolean {
+  return MATRIZ[rol]?.[recurso]?.includes(accion) ?? false;
+}
+
+export interface ItemNavegacion {
+  href: string;
+  etiqueta: string;
+  recurso: string;
+  /** Roles que ven el ítem en el menú (control fino se refuerza server-side). */
+  roles: UserRole[];
+  icono: string;
+}
+
+/**
+ * Navegación del panel. `roles` decide visibilidad en el sidebar; cada
+ * página además revalida con requerirRol() en el servidor.
+ */
+export const NAVEGACION: ItemNavegacion[] = [
+  {
+    href: "/panel",
+    etiqueta: "Inicio",
+    recurso: "inicio",
+    roles: ["admin", "recepcion", "asistente"],
+    icono: "inicio",
+  },
+  {
+    href: "/panel/pacientes",
+    etiqueta: "Pacientes",
+    recurso: "pacientes",
+    roles: ["admin", "recepcion", "asistente"],
+    icono: "pacientes",
+  },
+  {
+    href: "/panel/usuarios",
+    etiqueta: "Usuarias",
+    recurso: "usuarios",
+    roles: ["admin"],
+    icono: "usuarios",
+  },
+  {
+    href: "/panel/auditoria",
+    etiqueta: "Auditoría",
+    recurso: "auditoria",
+    roles: ["admin"],
+    icono: "auditoria",
+  },
+  {
+    href: "/panel/cuenta",
+    etiqueta: "Mi cuenta",
+    recurso: "cuenta",
+    roles: ["admin", "recepcion", "asistente"],
+    icono: "cuenta",
+  },
+];
