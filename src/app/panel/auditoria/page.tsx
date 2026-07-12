@@ -18,6 +18,10 @@ const ETIQUETA_ACCION: Record<string, string> = {
   reactivar_paciente: "Reactivó un paciente",
   crear_estudio: "Registró un estudio",
   eliminar_estudio: "Eliminó un estudio",
+  crear_cita: "Agendó una cita",
+  actualizar_cita: "Editó una cita",
+  cambiar_estado_cita: "Cambió el estado de una cita",
+  eliminar_cita: "Eliminó una cita",
 };
 
 export default async function AuditoriaPage() {

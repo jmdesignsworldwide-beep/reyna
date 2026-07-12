@@ -130,7 +130,8 @@ alter table public.estudios_cardiologicos force  row level security;
 -- ---------- Permisos del recurso 'estudios' ----------
 insert into public.role_permissions (rol, recurso, puede_ver, puede_crear, puede_editar, puede_borrar) values
   ('admin',     'estudios', true,  true,  true,  true),
-  ('recepcion', 'estudios', true,  false, false, false),
+  -- Recepción NO ve estudios clínicos (ecos/ECG/hallazgos = data sensible).
+  ('recepcion', 'estudios', false, false, false, false),
   ('asistente', 'estudios', true,  true,  true,  false)
 on conflict (rol, recurso) do update set
   puede_ver = excluded.puede_ver, puede_crear = excluded.puede_crear,

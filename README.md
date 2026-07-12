@@ -29,6 +29,15 @@ Base funcional con seguridad Fort Knox horneada desde la línea uno:
 - **Búsqueda** por nombre, apellido o cédula (validación de cédula dominicana).
 - Permisos por rol atados a la matriz `role_permissions` vía RLS (función `puede()`). Todas las acciones pasan por **Server Actions** con verificación de rol, rate limiting y auditoría. Archivar/reactivar en lugar de borrado destructivo.
 
+## Estado — Tanda 3: Agenda de citas
+
+- **Dos sedes con horarios reales**: Centro Oriental de Ginecología y Obstetricia (Lun–Sáb 9:00–19:00) y Centro Médico Real (Mar y Jue 14:30–19:00), sembrados en base de datos.
+- **Anti-doble-reserva** a nivel de base de datos (constraint `EXCLUDE` por sede + rango de tiempo) y validación server-side contra el horario de la sede y solapes de la doctora entre sedes.
+- **Tipos de consulta**: primera vez, seguimiento, ecocardiograma, electrocardiograma, chequeo cardiovascular. **Estados**: agendada, confirmada, atendida, cancelada, no asistió.
+- **Vistas** día / semana / mes / próximas, con **filtros** (sede, estado) y **búsqueda por paciente**.
+- **Conexión con la ficha**: botón “Agendar cita” desde el expediente del paciente.
+- RLS+FORCE en `sedes`, `sede_horarios` y `citas`; permisos por rol vía la matriz (`agenda`); todo auditado. Cero botones muertos.
+
 ## Seguridad (Fort Knox)
 
 - **RLS + FORCE ROW LEVEL SECURITY** en todas las tablas; políticas que niegan por defecto.
