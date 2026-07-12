@@ -201,6 +201,10 @@ create trigger trg_profiles_touch
   for each row execute function public.touch_updated_at();
 
 -- Crear perfil automáticamente al crear una usuaria en auth.users.
+-- SEGURIDAD: NUNCA se toma el rol del metadata del usuario (evita escalada por
+-- auto-registro si los signups públicos estuvieran habilitados). El perfil
+-- nace SIEMPRE como 'asistente' (mínimo privilegio); el rol real lo asigna
+-- después el route handler de administración usando service_role.
 create or replace function public.handle_new_user()
 returns trigger
 language plpgsql
@@ -214,7 +218,7 @@ begin
     coalesce(nullif(new.raw_user_meta_data ->> 'nombre_completo', ''), 'Usuaria'),
     nullif(new.raw_user_meta_data ->> 'cedula', ''),
     nullif(new.raw_user_meta_data ->> 'telefono', ''),
-    coalesce((new.raw_user_meta_data ->> 'rol')::public.user_role, 'asistente'),
+    'asistente',
     true
   )
   on conflict (id) do nothing;

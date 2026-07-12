@@ -38,6 +38,15 @@ where id = (select id from auth.users where email = 'CORREO_DE_LA_DOCTORA');
 A partir de ahí, la Dra. Reyna crea el resto de cuentas desde el panel
 (**Usuarias → Nueva usuaria**) con el rol que corresponda.
 
+## Ajuste de seguridad obligatorio en Auth
+
+En el panel de Supabase → **Authentication → Sign In / Providers → Email**,
+**deshabilita el registro público** (*Allow new users to sign up = OFF*).
+Solo las administradoras crean cuentas desde el sistema. Como defensa en
+profundidad, el trigger `handle_new_user` ya crea cualquier perfil como
+`asistente` (mínimo privilegio) y nunca toma el rol del metadata, de modo que
+un eventual auto-registro no podría escalar a administradora.
+
 ## Verificación de seguridad
 
 Tras aplicar las migraciones, confirma que el **Security Advisor** de Supabase
