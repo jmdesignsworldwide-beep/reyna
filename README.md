@@ -19,12 +19,13 @@ Base funcional con seguridad Fort Knox horneada desde la línea uno:
 
 ---
 
-## Estado — Tanda 2: Módulo de pacientes
+## Estado — Tanda 2: Módulo de pacientes (cardiología a fondo)
 
-- **Expediente de pacientes** con datos personales, contacto, seguro (ARS), información clínica (alergias, antecedentes) y contacto de emergencia.
-- **Búsqueda** por nombre, apellido o cédula.
-- **Alta, ficha y edición** con permisos por rol atados a la matriz `role_permissions` vía RLS (función `puede()`): admin (todo), recepción (crear/editar), asistente (ver/editar acotado). Archivar/reactivar en lugar de borrado destructivo.
-- Todas las acciones pasan por **Server Actions** con verificación de rol, rate limiting y auditoría.
+- **Expediente cardiológico completo**: identificación y demográficos, contacto, seguro (ARS + plan), contacto de emergencia, **antropometría con IMC calculado**, **factores de riesgo cardiovascular** (HTA, diabetes, dislipidemia, tabaquismo, sedentarismo, obesidad derivada del IMC, antecedentes familiares, ERC), antecedentes personales, **medicación estructurada** y alergias.
+- **Alertas visibles en la ficha**: alergias en **rojo** (alerta crítica) y factores de riesgo en **ámbar**, con un **perfil de riesgo cardiovascular** resumido.
+- **Estudios cardiológicos** (ecocardiograma, ECG, prueba de esfuerzo, Holter de ritmo/presión): historial por paciente ordenado por fecha, con **carga de archivo** (PDF/imagen) en un **bucket privado de Supabase Storage** servido mediante *signed URLs*.
+- **Búsqueda** por nombre, apellido o cédula (validación de cédula dominicana).
+- Permisos por rol atados a la matriz `role_permissions` vía RLS (función `puede()`). Todas las acciones pasan por **Server Actions** con verificación de rol, rate limiting y auditoría. Archivar/reactivar en lugar de borrado destructivo.
 
 ## Seguridad (Fort Knox)
 

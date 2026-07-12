@@ -28,6 +28,7 @@ export type Accion = "ver" | "crear" | "editar" | "borrar";
 const MATRIZ: Record<UserRole, Record<string, Accion[]>> = {
   admin: {
     pacientes: ["ver", "crear", "editar", "borrar"],
+    estudios: ["ver", "crear", "editar", "borrar"],
     agenda: ["ver", "crear", "editar", "borrar"],
     finanzas: ["ver", "crear", "editar", "borrar"],
     usuarios: ["ver", "crear", "editar", "borrar"],
@@ -35,10 +36,12 @@ const MATRIZ: Record<UserRole, Record<string, Accion[]>> = {
   },
   recepcion: {
     pacientes: ["ver", "crear", "editar"],
+    estudios: ["ver"],
     agenda: ["ver", "crear", "editar", "borrar"],
   },
   asistente: {
     pacientes: ["ver", "editar"],
+    estudios: ["ver", "crear", "editar"],
     agenda: ["ver"],
   },
 };

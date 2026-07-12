@@ -16,29 +16,99 @@ export type Json =
 export type UserRole = "admin" | "recepcion" | "asistente";
 
 export type SexoPaciente = "femenino" | "masculino";
+export type EstadoCivil =
+  | "soltero"
+  | "casado"
+  | "union_libre"
+  | "divorciado"
+  | "viudo"
+  | "otro";
+export type DiabetesTipo = "no" | "tipo_1" | "tipo_2";
+export type TabaquismoEstado = "nunca" | "exfumador" | "activo";
+export type TipoEstudio =
+  | "ecocardiograma"
+  | "electrocardiograma"
+  | "prueba_esfuerzo"
+  | "holter_ritmo"
+  | "holter_presion"
+  | "otro";
+
+export type Medicamento = {
+  medicamento: string;
+  dosis: string;
+  frecuencia: string;
+};
 
 export type Paciente = {
   id: string;
+  // Identificación y demográficos
   nombres: string;
   apellidos: string;
   cedula: string | null;
   fecha_nacimiento: string | null;
   sexo: SexoPaciente | null;
+  estado_civil: EstadoCivil | null;
+  ocupacion: string | null;
+  // Contacto
   telefono: string | null;
+  telefono_secundario: string | null;
   correo: string | null;
   direccion: string | null;
+  ciudad_sector: string | null;
+  // Seguro
   ars: string | null;
   numero_afiliado: string | null;
+  tipo_plan: string | null;
+  // Contacto de emergencia
+  contacto_emergencia_nombre: string | null;
+  contacto_emergencia_parentesco: string | null;
+  contacto_emergencia_telefono: string | null;
+  // Antropometría
+  peso: number | null;
+  talla: number | null;
+  imc: number | null; // columna generada
+  circunferencia_abdominal: number | null;
+  // Factores de riesgo cardiovascular
+  rf_hipertension: boolean;
+  rf_hipertension_desde: string | null;
+  rf_diabetes: DiabetesTipo;
+  rf_diabetes_desde: string | null;
+  rf_dislipidemia: boolean;
+  rf_tabaquismo: TabaquismoEstado;
+  rf_tabaquismo_paquetes_ano: number | null;
+  rf_sedentarismo: boolean;
+  rf_antecedentes_familiares: boolean;
+  rf_antecedentes_familiares_parentesco: string | null;
+  rf_enfermedad_renal: boolean;
+  // Antecedentes personales
+  antecedentes_patologicos: string | null;
+  antecedentes_quirurgicos: string | null;
+  antecedentes_cardiovasculares: string | null;
+  // Medicación
+  medicacion: Medicamento[];
+  // Alergias y otros
   tipo_sangre: string | null;
   alergias: string | null;
-  antecedentes: string | null;
-  contacto_emergencia_nombre: string | null;
-  contacto_emergencia_telefono: string | null;
+  referido_por: string | null;
   notas: string | null;
   activo: boolean;
   created_by: string | null;
   created_at: string;
   updated_at: string;
+};
+
+export type Estudio = {
+  id: string;
+  paciente_id: string;
+  tipo: TipoEstudio;
+  fecha_estudio: string;
+  hallazgos: string | null;
+  conclusion: string | null;
+  archivo_path: string | null;
+  archivo_nombre: string | null;
+  realizado_por: string | null;
+  created_by: string | null;
+  created_at: string;
 };
 
 // Se usan `type` (no `interface`) a propósito: los alias de tipo son
@@ -139,49 +209,22 @@ export interface Database {
       };
       pacientes: {
         Row: Paciente;
-        Insert: {
-          id?: string;
-          nombres: string;
-          apellidos: string;
-          cedula?: string | null;
-          fecha_nacimiento?: string | null;
-          sexo?: SexoPaciente | null;
-          telefono?: string | null;
-          correo?: string | null;
-          direccion?: string | null;
-          ars?: string | null;
-          numero_afiliado?: string | null;
-          tipo_sangre?: string | null;
-          alergias?: string | null;
-          antecedentes?: string | null;
-          contacto_emergencia_nombre?: string | null;
-          contacto_emergencia_telefono?: string | null;
-          notas?: string | null;
-          activo?: boolean;
-          created_by?: string | null;
-          created_at?: string;
-          updated_at?: string;
+        Insert: Partial<
+          Omit<Paciente, "id" | "imc" | "created_at" | "updated_at">
+        > & { nombres: string; apellidos: string };
+        Update: Partial<
+          Omit<Paciente, "id" | "imc" | "created_at" | "updated_at">
+        >;
+        Relationships: [];
+      };
+      estudios_cardiologicos: {
+        Row: Estudio;
+        Insert: Partial<Omit<Estudio, "id" | "created_at">> & {
+          paciente_id: string;
+          tipo: TipoEstudio;
+          fecha_estudio: string;
         };
-        Update: {
-          nombres?: string;
-          apellidos?: string;
-          cedula?: string | null;
-          fecha_nacimiento?: string | null;
-          sexo?: SexoPaciente | null;
-          telefono?: string | null;
-          correo?: string | null;
-          direccion?: string | null;
-          ars?: string | null;
-          numero_afiliado?: string | null;
-          tipo_sangre?: string | null;
-          alergias?: string | null;
-          antecedentes?: string | null;
-          contacto_emergencia_nombre?: string | null;
-          contacto_emergencia_telefono?: string | null;
-          notas?: string | null;
-          activo?: boolean;
-          updated_at?: string;
-        };
+        Update: Partial<Omit<Estudio, "id" | "paciente_id" | "created_at">>;
         Relationships: [];
       };
     };
@@ -217,6 +260,10 @@ export interface Database {
     Enums: {
       user_role: UserRole;
       sexo_paciente: SexoPaciente;
+      estado_civil: EstadoCivil;
+      diabetes_tipo: DiabetesTipo;
+      tabaquismo_estado: TabaquismoEstado;
+      tipo_estudio: TipoEstudio;
     };
     CompositeTypes: { [_ in never]: never };
   };

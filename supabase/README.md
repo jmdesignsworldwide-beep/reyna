@@ -9,6 +9,7 @@ Se aplican en orden. Todas las tablas nacen con **RLS + FORCE ROW LEVEL SECURITY
 2. `0002_politicas.sql` — Políticas RLS (negar por defecto).
 3. `0003_permisos_seed.sql` — Matriz de permisos por rol.
 4. `0004_pacientes.sql` — Tabla `pacientes`, función `puede()` y RLS atada a la matriz de permisos.
+5. `0005_pacientes_cardiologia.sql` — Expansión cardiológica de `pacientes` (factores de riesgo, antropometría con IMC, medicación), tabla `estudios_cardiologicos` con RLS, y bucket **privado** de Storage `estudios` con sus políticas.
 
 ## Cómo aplicarlas
 
