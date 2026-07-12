@@ -1,6 +1,11 @@
 /**
- * Validación de variables de entorno.
- * Falla temprano y claro si falta algo, para no arrancar con configuración rota.
+ * Acceso a variables de entorno con validación PEREZOSA.
+ *
+ * La validación ocurre al LEER cada variable (en tiempo de ejecución), no al
+ * cargar el módulo. Así el `next build` no depende de secretos (buena práctica
+ * y necesario para que Vercel construya previews antes de configurar el
+ * entorno), pero en runtime sigue fallando seguro y claro si algo falta.
+ *
  * La service_role NUNCA se lee aquí (esto se importa en cliente y servidor);
  * se lee exclusivamente en src/lib/supabase/admin.ts (solo servidor).
  */
@@ -15,13 +20,19 @@ function requerido(nombre: string, valor: string | undefined): string {
 }
 
 export const env = {
-  SUPABASE_URL: requerido(
-    "NEXT_PUBLIC_SUPABASE_URL",
-    process.env.NEXT_PUBLIC_SUPABASE_URL,
-  ),
-  SUPABASE_ANON_KEY: requerido(
-    "NEXT_PUBLIC_SUPABASE_ANON_KEY",
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-  ),
-  SITE_URL: process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000",
+  get SUPABASE_URL(): string {
+    return requerido(
+      "NEXT_PUBLIC_SUPABASE_URL",
+      process.env.NEXT_PUBLIC_SUPABASE_URL,
+    );
+  },
+  get SUPABASE_ANON_KEY(): string {
+    return requerido(
+      "NEXT_PUBLIC_SUPABASE_ANON_KEY",
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+    );
+  },
+  get SITE_URL(): string {
+    return process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
+  },
 };
