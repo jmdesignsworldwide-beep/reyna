@@ -230,31 +230,12 @@ export interface Database {
     };
     Views: { [_ in never]: never };
     Functions: {
-      is_admin: { Args: Record<PropertyKey, never>; Returns: boolean };
-      current_user_role: {
-        Args: Record<PropertyKey, never>;
-        Returns: UserRole;
-      };
-      puede: {
-        Args: { p_recurso: string; p_accion: string };
-        Returns: boolean;
-      };
-      count_active_admins: {
-        Args: Record<PropertyKey, never>;
-        Returns: number;
-      };
+      // Único RPC expuesto en `public` (solo lo invoca el service_role).
+      // Los helpers de RLS (is_admin, current_user_role, puede) viven en el
+      // esquema `private`, no expuesto por PostgREST — ver migración 0006.
       enforce_rate_limit: {
         Args: { p_bucket: string; p_max: number; p_window_seconds: number };
         Returns: boolean;
-      };
-      log_audit: {
-        Args: {
-          p_accion: string;
-          p_entidad?: string;
-          p_entidad_id?: string;
-          p_metadata?: Json;
-        };
-        Returns: undefined;
       };
     };
     Enums: {
