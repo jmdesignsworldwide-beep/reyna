@@ -149,3 +149,27 @@ export const estudioSchema = z.object({
 });
 
 export type EstudioInput = z.infer<typeof estudioSchema>;
+
+// ---------- Citas / Agenda ----------
+export const citaSchema = z.object({
+  paciente_id: z.string().uuid("Selecciona un paciente."),
+  sede_id: z.string().uuid("Selecciona una sede."),
+  fecha: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Fecha inválida."),
+  hora_inicio: z.string().regex(/^\d{2}:\d{2}$/, "Hora inválida."),
+  duracion: z.coerce.number().int().min(10).max(240),
+  tipo: z.enum([
+    "primera_vez",
+    "seguimiento",
+    "ecocardiograma",
+    "electrocardiograma",
+    "chequeo_cardiovascular",
+  ]),
+  motivo: z.string().trim().max(300).optional().or(z.literal("")),
+  notas: z.string().trim().max(1000).optional().or(z.literal("")),
+});
+
+export const estadoCitaSchema = z.object({
+  estado: z.enum(["agendada", "confirmada", "atendida", "cancelada", "no_show"]),
+});
+
+export type CitaInput = z.infer<typeof citaSchema>;

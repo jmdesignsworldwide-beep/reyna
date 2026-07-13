@@ -73,6 +73,7 @@ export default async function FichaPacientePage({
 
   const edad = calcularEdad(p.fecha_nacimiento);
   const puedeEditar = puedeUI(usuaria.rol, "pacientes", "editar");
+  const puedeAgendar = puedeUI(usuaria.rol, "agenda", "crear");
   const factores = factoresDeRiesgo(p);
   const riesgo = nivelRiesgo(factores.length);
   const claseImc = clasificacionIMC(p.imc);
@@ -94,15 +95,25 @@ export default async function FichaPacientePage({
             {p.cedula ? ` · Cédula ${p.cedula}` : ""}
           </p>
         </div>
-        {puedeEditar && (
-          <div className="flex items-center gap-2">
-            <Link
-              href={`/panel/pacientes/${p.id}/editar`}
-              className="rounded-suave bg-[linear-gradient(120deg,var(--rosa-principal),var(--rosa-medio))] px-4 py-2.5 text-sm font-medium text-white shadow-tarjeta transition-all hover:shadow-tarjeta-hover hover:brightness-105"
-            >
-              Editar
-            </Link>
-            <BotonArchivar id={p.id} activo={p.activo} />
+        {(puedeEditar || puedeAgendar) && (
+          <div className="flex flex-wrap items-center gap-2">
+            {puedeAgendar && p.activo && (
+              <Link
+                href={`/panel/agenda?nuevo=${p.id}`}
+                className="rounded-suave border border-[var(--borde)] px-4 py-2.5 text-sm font-medium text-rosa-principal transition-colors hover:border-rosa-hover"
+              >
+                ＋ Agendar cita
+              </Link>
+            )}
+            {puedeEditar && (
+              <Link
+                href={`/panel/pacientes/${p.id}/editar`}
+                className="rounded-suave bg-[linear-gradient(120deg,var(--rosa-principal),var(--rosa-medio))] px-4 py-2.5 text-sm font-medium text-white shadow-tarjeta transition-all hover:shadow-tarjeta-hover hover:brightness-105"
+              >
+                Editar
+              </Link>
+            )}
+            {puedeEditar && <BotonArchivar id={p.id} activo={p.activo} />}
           </div>
         )}
       </header>

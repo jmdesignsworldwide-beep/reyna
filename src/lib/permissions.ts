@@ -35,7 +35,7 @@ const MATRIZ: Record<UserRole, Record<string, Accion[]>> = {
   },
   recepcion: {
     pacientes: ["ver", "crear", "editar"],
-    estudios: ["ver"],
+    // Sin acceso a estudios clínicos (data sensible): solo pacientes y agenda.
     agenda: ["ver", "crear", "editar", "borrar"],
   },
   asistente: {
@@ -77,6 +77,13 @@ export const NAVEGACION: ItemNavegacion[] = [
     recurso: "pacientes",
     roles: ["admin", "recepcion", "asistente"],
     icono: "pacientes",
+  },
+  {
+    href: "/panel/agenda",
+    etiqueta: "Agenda",
+    recurso: "agenda",
+    roles: ["admin", "recepcion", "asistente"],
+    icono: "agenda",
   },
   {
     href: "/panel/usuarios",

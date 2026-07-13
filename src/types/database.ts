@@ -111,6 +111,55 @@ export type Estudio = {
   created_at: string;
 };
 
+// ---------- Agenda ----------
+export type TipoConsulta =
+  | "primera_vez"
+  | "seguimiento"
+  | "ecocardiograma"
+  | "electrocardiograma"
+  | "chequeo_cardiovascular";
+
+export type EstadoCita =
+  | "agendada"
+  | "confirmada"
+  | "atendida"
+  | "cancelada"
+  | "no_show";
+
+export type Sede = {
+  id: string;
+  slug: string;
+  nombre: string;
+  direccion: string | null;
+  color: string | null;
+  activo: boolean;
+  created_at: string;
+};
+
+export type SedeHorario = {
+  id: string;
+  sede_id: string;
+  dia_semana: number; // 0=domingo … 6=sábado
+  hora_inicio: string; // "HH:MM:SS"
+  hora_fin: string;
+};
+
+export type Cita = {
+  id: string;
+  paciente_id: string;
+  sede_id: string;
+  fecha: string; // YYYY-MM-DD
+  hora_inicio: string; // HH:MM:SS
+  hora_fin: string;
+  tipo: TipoConsulta;
+  estado: EstadoCita;
+  motivo: string | null;
+  notas: string | null;
+  created_by: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
 // Se usan `type` (no `interface`) a propósito: los alias de tipo son
 // asignables a Record<string, unknown> que exige GenericSchema de Supabase;
 // las interfaces no lo son (les falta la index signature implícita).
@@ -227,6 +276,39 @@ export interface Database {
         Update: Partial<Omit<Estudio, "id" | "paciente_id" | "created_at">>;
         Relationships: [];
       };
+      sedes: {
+        Row: Sede;
+        Insert: Partial<Omit<Sede, "id" | "created_at">> & {
+          slug: string;
+          nombre: string;
+        };
+        Update: Partial<Omit<Sede, "id" | "created_at">>;
+        Relationships: [];
+      };
+      sede_horarios: {
+        Row: SedeHorario;
+        Insert: Partial<Omit<SedeHorario, "id">> & {
+          sede_id: string;
+          dia_semana: number;
+          hora_inicio: string;
+          hora_fin: string;
+        };
+        Update: Partial<Omit<SedeHorario, "id">>;
+        Relationships: [];
+      };
+      citas: {
+        Row: Cita;
+        Insert: Partial<Omit<Cita, "id" | "created_at" | "updated_at">> & {
+          paciente_id: string;
+          sede_id: string;
+          fecha: string;
+          hora_inicio: string;
+          hora_fin: string;
+          tipo: TipoConsulta;
+        };
+        Update: Partial<Omit<Cita, "id" | "created_at" | "updated_at">>;
+        Relationships: [];
+      };
     };
     Views: { [_ in never]: never };
     Functions: {
@@ -245,6 +327,8 @@ export interface Database {
       diabetes_tipo: DiabetesTipo;
       tabaquismo_estado: TabaquismoEstado;
       tipo_estudio: TipoEstudio;
+      tipo_consulta: TipoConsulta;
+      estado_cita: EstadoCita;
     };
     CompositeTypes: { [_ in never]: never };
   };

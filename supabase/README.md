@@ -11,6 +11,8 @@ Se aplican en orden. Todas las tablas nacen con **RLS + FORCE ROW LEVEL SECURITY
 4. `0004_pacientes.sql` — Tabla `pacientes`, función `puede()` y RLS atada a la matriz de permisos.
 5. `0005_pacientes_cardiologia.sql` — Expansión cardiológica de `pacientes` (factores de riesgo, antropometría con IMC, medicación), tabla `estudios_cardiologicos` con RLS, y bucket **privado** de Storage `estudios` con sus políticas.
 6. `0006_seguridad_esquema_privado.sql` — Endurecimiento para dejar el **Security Advisor limpio**: helpers de RLS movidos al esquema `private` (no expuesto por PostgREST), sin ejecución pública de funciones internas, y deny-all en `rate_limits`.
+7. `0007_recepcion_sin_estudios.sql` — Recepción deja de ver estudios clínicos (data sensible).
+8. `0008_agenda.sql` — Módulo de Agenda: `sedes`, `sede_horarios` y `citas` con RLS+FORCE, anti-doble-reserva por sede (constraint EXCLUDE), horarios reales sembrados.
 
 ## Cómo aplicarlas
 

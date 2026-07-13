@@ -18,6 +18,14 @@ export default async function PanelInicio() {
     .select("id", { count: "exact", head: true })
     .eq("activo", true);
 
+  // Citas de hoy (todos los roles ven agenda).
+  const hoyClave = new Date().toISOString().slice(0, 10);
+  const { count: citasHoy } = await supabase
+    .from("citas")
+    .select("id", { count: "exact", head: true })
+    .eq("fecha", hoyClave)
+    .neq("estado", "cancelada");
+
   // Datos reales (RLS filtra por rol automáticamente).
   let totalUsuarias = 0;
   let totalAdmins = 0;
@@ -68,6 +76,14 @@ export default async function PanelInicio() {
             etiqueta="Pacientes activos"
             valor={totalPacientes ?? 0}
             detalle="Ver expediente →"
+          />
+        </Link>
+        <Link href="/panel/agenda?vista=dia" className="block">
+          <CardEstadistica
+            etiqueta="Citas de hoy"
+            valor={citasHoy ?? 0}
+            detalle="Ver agenda →"
+            color="var(--rosa-hover)"
           />
         </Link>
         {esAdmin && (
