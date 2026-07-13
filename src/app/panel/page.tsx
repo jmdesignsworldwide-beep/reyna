@@ -1,189 +1,156 @@
-import Link from "next/link";
 import { requerirUsuaria } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
-import { Card, CardEstadistica } from "@/components/ui/Card";
-import { HeartMark } from "@/components/ui/HeartMark";
-import { ETIQUETAS_ROL, DESCRIPCION_ROL } from "@/lib/permissions";
-import { formatearFechaHora } from "@/lib/formato";
+import { puedeUI } from "@/lib/permissions";
+import { DashboardCliente, type DashboardDatos, type CitaResumen } from "@/components/dashboard/DashboardCliente";
+import { factoresDeRiesgo } from "@/lib/cardio";
+import { claveFecha } from "@/lib/agenda";
+import type { Paciente, Sede } from "@/types/database";
 
-export default async function PanelInicio() {
+const SELECT_CITA =
+  "id, fecha, hora_inicio, estado, tipo, paciente:pacientes(id,nombres,apellidos), sede:sedes(nombre,color)";
+
+export default async function DashboardPage() {
   const usuaria = await requerirUsuaria();
   const supabase = await createClient();
+  const clinico = puedeUI(usuaria.rol, "estudios", "ver"); // admin / asistente
 
-  const esAdmin = usuaria.rol === "admin";
+  const ahora = new Date();
+  const hoy = claveFecha(ahora);
+  const inicioMes = `${ahora.getFullYear()}-${String(ahora.getMonth() + 1).padStart(2, "0")}-01T00:00:00`;
 
-  // Pacientes activos: visible para todos los roles (todos tienen 'ver').
-  const { count: totalPacientes } = await supabase
-    .from("pacientes")
-    .select("id", { count: "exact", head: true })
-    .eq("activo", true);
+  // ---- Datos comunes (respetan RLS) ----
+  const [
+    { count: activos },
+    { count: nuevosMes },
+    { data: citasHoyRaw },
+    { data: proximasRaw },
+    { data: futuras },
+    { data: sedesRaw },
+    { data: recientesPacRaw },
+    { data: recientesCitasRaw },
+  ] = await Promise.all([
+    supabase.from("pacientes").select("id", { count: "exact", head: true }).eq("activo", true),
+    supabase.from("pacientes").select("id", { count: "exact", head: true }).gte("created_at", inicioMes),
+    supabase.from("citas").select(SELECT_CITA).eq("fecha", hoy).neq("estado", "cancelada").order("hora_inicio"),
+    supabase.from("citas").select(SELECT_CITA).gt("fecha", hoy).neq("estado", "cancelada").order("fecha").order("hora_inicio").limit(6),
+    supabase.from("citas").select("paciente_id, sede_id").gte("fecha", hoy).neq("estado", "cancelada"),
+    supabase.from("sedes").select("id, nombre, color").eq("activo", true).order("nombre"),
+    supabase.from("pacientes").select("id, nombres, apellidos, created_at").eq("activo", true).order("created_at", { ascending: false }).limit(5),
+    supabase.from("citas").select(SELECT_CITA).order("created_at", { ascending: false }).limit(5),
+  ]);
 
-  // Citas de hoy (todos los roles ven agenda).
-  const hoyClave = new Date().toISOString().slice(0, 10);
-  const { count: citasHoy } = await supabase
-    .from("citas")
-    .select("id", { count: "exact", head: true })
-    .eq("fecha", hoyClave)
-    .neq("estado", "cancelada");
+  const citasHoy = (citasHoyRaw as unknown as CitaResumen[] | null) ?? [];
+  const proximas = (proximasRaw as unknown as CitaResumen[] | null) ?? [];
 
-  // Datos reales (RLS filtra por rol automáticamente).
-  let totalUsuarias = 0;
-  let totalAdmins = 0;
-  let ultimaActividad: { accion: string; created_at: string; actor_email: string | null }[] = [];
+  // Resumen por sede (citas futuras por sede)
+  const conteoSede = new Map<string, number>();
+  const pacientesConCitaFutura = new Set<string>();
+  for (const f of (futuras as { paciente_id: string; sede_id: string }[] | null) ?? []) {
+    conteoSede.set(f.sede_id, (conteoSede.get(f.sede_id) ?? 0) + 1);
+    pacientesConCitaFutura.add(f.paciente_id);
+  }
+  const sedes = ((sedesRaw as Pick<Sede, "id" | "nombre" | "color">[] | null) ?? []).map((s) => ({
+    nombre: s.nombre,
+    color: s.color ?? "#B14A73",
+    total: conteoSede.get(s.id) ?? 0,
+  }));
 
-  if (esAdmin) {
-    const [{ count: usuarias }, { count: admins }, { data: actividad }] =
-      await Promise.all([
-        supabase.from("profiles").select("id", { count: "exact", head: true }),
-        supabase
-          .from("profiles")
-          .select("id", { count: "exact", head: true })
-          .eq("rol", "admin")
-          .eq("activo", true),
-        supabase
-          .from("audit_log")
-          .select("accion, created_at, actor_email")
-          .order("created_at", { ascending: false })
-          .limit(6),
-      ]);
-    totalUsuarias = usuarias ?? 0;
-    totalAdmins = admins ?? 0;
-    ultimaActividad = actividad ?? [];
+  const recientesPacientes = ((recientesPacRaw as Pick<Paciente, "id" | "nombres" | "apellidos" | "created_at">[] | null) ?? []).map((p) => ({
+    id: p.id,
+    nombre: `${p.apellidos}, ${p.nombres}`,
+    created_at: p.created_at,
+  }));
+
+  // ---- Datos clínicos (solo admin / asistente) ----
+  let clinicoDatos: DashboardDatos["clinico"] = null;
+  if (clinico) {
+    const { data: pacRaw } = await supabase
+      .from("pacientes")
+      .select(
+        "id, nombres, apellidos, alergias, imc, rf_hipertension, rf_hipertension_desde, rf_diabetes, rf_diabetes_desde, rf_dislipidemia, rf_tabaquismo, rf_tabaquismo_paquetes_ano, rf_sedentarismo, rf_antecedentes_familiares, rf_antecedentes_familiares_parentesco, rf_enfermedad_renal",
+      )
+      .eq("activo", true)
+      .limit(3000);
+
+    const pac = (pacRaw as unknown as Paciente[] | null) ?? [];
+
+    // Distribución por nivel de riesgo
+    const niveles = { sin: 0, bajo: 0, alto: 0, muy: 0 };
+    // Conteo por factor
+    const fc = { hta: 0, dm: 0, disli: 0, tabaco: 0, sed: 0, obes: 0, fam: 0, renal: 0 };
+    const alergias: { id: string; nombre: string }[] = [];
+    const reevaluaciones: { id: string; nombre: string }[] = [];
+    let riesgoAlto = 0;
+
+    for (const p of pac) {
+      const n = factoresDeRiesgo(p).length;
+      if (n === 0) niveles.sin++;
+      else if (n <= 2) niveles.bajo++;
+      else if (n <= 4) niveles.alto++;
+      else niveles.muy++;
+
+      if (p.rf_hipertension) fc.hta++;
+      if (p.rf_diabetes !== "no") fc.dm++;
+      if (p.rf_dislipidemia) fc.disli++;
+      if (p.rf_tabaquismo === "activo") fc.tabaco++;
+      if (p.rf_sedentarismo) fc.sed++;
+      if (p.imc !== null && p.imc >= 30) fc.obes++;
+      if (p.rf_antecedentes_familiares) fc.fam++;
+      if (p.rf_enfermedad_renal) fc.renal++;
+
+      const nombre = `${p.apellidos}, ${p.nombres}`;
+      if ((p.alergias ?? "").trim() !== "" && alergias.length < 6) alergias.push({ id: p.id, nombre });
+
+      if (n >= 3) {
+        riesgoAlto++;
+        if (!pacientesConCitaFutura.has(p.id) && reevaluaciones.length < 6) {
+          reevaluaciones.push({ id: p.id, nombre });
+        }
+      }
+    }
+
+    const totalAlergias = pac.filter((p) => (p.alergias ?? "").trim() !== "").length;
+    const totalReeval = pac.filter(
+      (p) => factoresDeRiesgo(p).length >= 3 && !pacientesConCitaFutura.has(p.id),
+    ).length;
+
+    clinicoDatos = {
+      distribNivel: [
+        { etiqueta: "Sin factores", valor: niveles.sin, color: "#4CAF82" },
+        { etiqueta: "Bajo-moderado", valor: niveles.bajo, color: "#E8A13C" },
+        { etiqueta: "Alto", valor: niveles.alto, color: "#E0567A" },
+        { etiqueta: "Muy alto", valor: niveles.muy, color: "#B14A73" },
+      ],
+      factores: [
+        { etiqueta: "Hipertensión", valor: fc.hta, color: "#B14A73" },
+        { etiqueta: "Diabetes", valor: fc.dm, color: "#C25A82" },
+        { etiqueta: "Dislipidemia", valor: fc.disli, color: "#E0567A" },
+        { etiqueta: "Tabaquismo activo", valor: fc.tabaco, color: "#E8A13C" },
+        { etiqueta: "Sedentarismo", valor: fc.sed, color: "#8A6B78" },
+        { etiqueta: "Obesidad", valor: fc.obes, color: "#E87FA6" },
+        { etiqueta: "Antec. familiares", valor: fc.fam, color: "#C25A82" },
+        { etiqueta: "Enf. renal crónica", valor: fc.renal, color: "#B14A73" },
+      ],
+      riesgoAlto,
+      alergias: { total: totalAlergias, lista: alergias },
+      reevaluaciones: { total: totalReeval, lista: reevaluaciones },
+    };
   }
 
-  return (
-    <div className="space-y-8">
-      <header className="animate-fade-up">
-        <div className="flex items-center gap-2 text-sm text-rosa-medio">
-          <HeartMark className="h-4 w-4" />
-          <span>Panel de gestión clínica</span>
-        </div>
-        <h1 className="mt-2 font-display text-3xl font-semibold text-texto-principal">
-          Hola, {usuaria.nombre_completo}
-        </h1>
-        <p className="mt-1 text-texto-secundario">
-          Tu rol:{" "}
-          <span className="font-medium text-rosa-principal">
-            {ETIQUETAS_ROL[usuaria.rol]}
-          </span>{" "}
-          — {DESCRIPCION_ROL[usuaria.rol]}
-        </p>
-      </header>
+  const datos: DashboardDatos = {
+    metricas: {
+      activos: activos ?? 0,
+      nuevosMes: nuevosMes ?? 0,
+      citasHoy: citasHoy.length,
+      proximas: (futuras as unknown[] | null)?.length ?? 0,
+    },
+    citasHoy,
+    proximas,
+    sedes,
+    recientesPacientes,
+    recientesCitas: (recientesCitasRaw as unknown as CitaResumen[] | null) ?? [],
+    clinico: clinicoDatos,
+  };
 
-      <section className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-        <Link href="/panel/pacientes" className="block">
-          <CardEstadistica
-            etiqueta="Pacientes activos"
-            valor={totalPacientes ?? 0}
-            detalle="Ver expediente →"
-          />
-        </Link>
-        <Link href="/panel/agenda?vista=dia" className="block">
-          <CardEstadistica
-            etiqueta="Citas de hoy"
-            valor={citasHoy ?? 0}
-            detalle="Ver agenda →"
-            color="var(--rosa-hover)"
-          />
-        </Link>
-        {esAdmin && (
-          <>
-            <CardEstadistica
-              etiqueta="Usuarias del sistema"
-              valor={totalUsuarias}
-              detalle="Cuentas registradas"
-            />
-          <CardEstadistica
-            etiqueta="Administradoras activas"
-            valor={totalAdmins}
-            detalle="Protección del último admin activa"
-            color="var(--rosa-hover)"
-          />
-            <CardEstadistica
-              etiqueta="Eventos auditados"
-              valor={ultimaActividad.length > 0 ? "Activa" : "—"}
-              detalle="Bitácora en funcionamiento"
-              color="#4CAF82"
-            />
-          </>
-        )}
-      </section>
-
-      <section className="grid gap-6 lg:grid-cols-3">
-        <Card className="lg:col-span-2">
-          <h2 className="font-display text-xl font-semibold text-texto-principal">
-            Próximos pasos
-          </h2>
-          <p className="mt-1 text-sm text-texto-secundario">
-            Esta es la base segura del sistema. Los módulos clínicos llegan en
-            las siguientes tandas.
-          </p>
-          <ul className="mt-4 space-y-3">
-            {PROXIMOS.map((p) => (
-              <li key={p} className="flex items-start gap-3 text-sm text-texto-principal">
-                <span className="mt-1.5 h-1.5 w-1.5 flex-none rounded-full bg-rosa-hover" />
-                {p}
-              </li>
-            ))}
-          </ul>
-        </Card>
-
-        {esAdmin ? (
-          <Card>
-            <h2 className="font-display text-xl font-semibold text-texto-principal">
-              Actividad reciente
-            </h2>
-            {ultimaActividad.length === 0 ? (
-              <p className="mt-3 text-sm text-texto-secundario">
-                Aún no hay eventos registrados.
-              </p>
-            ) : (
-              <ul className="mt-4 space-y-3">
-                {ultimaActividad.map((a, i) => (
-                  <li key={i} className="border-b border-[var(--borde)] pb-2.5 last:border-0">
-                    <p className="text-sm font-medium text-texto-principal">
-                      {a.accion}
-                    </p>
-                    <p className="text-xs text-texto-secundario">
-                      {a.actor_email ?? "sistema"} ·{" "}
-                      {formatearFechaHora(a.created_at)}
-                    </p>
-                  </li>
-                ))}
-              </ul>
-            )}
-            <Link
-              href="/panel/auditoria"
-              className="mt-4 inline-block text-sm text-rosa-principal hover:text-rosa-hover"
-            >
-              Ver bitácora completa →
-            </Link>
-          </Card>
-        ) : (
-          <Card>
-            <h2 className="font-display text-xl font-semibold text-texto-principal">
-              Tu cuenta
-            </h2>
-            <p className="mt-3 text-sm text-texto-secundario">
-              Puedes actualizar tu contraseña y datos personales desde tu
-              cuenta.
-            </p>
-            <Link
-              href="/panel/cuenta"
-              className="mt-4 inline-block text-sm text-rosa-principal hover:text-rosa-hover"
-            >
-              Ir a mi cuenta →
-            </Link>
-          </Card>
-        )}
-      </section>
-    </div>
-  );
+  return <DashboardCliente nombre={usuaria.nombre_completo} rol={usuaria.rol} datos={datos} />;
 }
-
-const PROXIMOS = [
-  "Pacientes: expediente cardiológico con factores de riesgo y estudios.",
-  "Agenda de citas con recordatorios.",
-  "Historia clínica cardiológica.",
-  "Dashboard con indicadores de la consulta.",
-];
