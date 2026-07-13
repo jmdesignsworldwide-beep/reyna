@@ -29,6 +29,13 @@ Base funcional con seguridad Fort Knox horneada desde la línea uno:
 - **Búsqueda** por nombre, apellido o cédula (validación de cédula dominicana).
 - Permisos por rol atados a la matriz `role_permissions` vía RLS (función `puede()`). Todas las acciones pasan por **Server Actions** con verificación de rol, rate limiting y auditoría. Archivar/reactivar en lugar de borrado destructivo.
 
+## Estado — Tanda 4: Dashboard premium
+
+- **Datos en vivo** (respetando la matriz de permisos): pacientes activos, nuevos del mes, citas de hoy y próximas (conectado a la agenda real), resumen por sede, actividad reciente (últimos pacientes y citas).
+- **Widgets clínicos** (solo admin/asistente): alertas de alergias críticas, riesgo cardiovascular alto y reevaluaciones pendientes; **gráfica donut** del nivel de riesgo y **barras** de pacientes por factor cardiovascular.
+- **Nivel visual**: aurora rosa/crema, títulos serif, contadores animados, gráficas animadas al cargar, micro-interacciones, estados vacíos con gusto, **skeletons** de carga y responsive.
+- **Role-adaptive**: recepción ve solo lo suyo (citas, pacientes, sedes) sin data clínica sensible.
+
 ## Estado — Tanda 3: Agenda de citas
 
 - **Dos sedes con horarios reales**: Centro Oriental de Ginecología y Obstetricia (Lun–Sáb 9:00–19:00) y Centro Médico Real (Mar y Jue 14:30–19:00), sembrados en base de datos.

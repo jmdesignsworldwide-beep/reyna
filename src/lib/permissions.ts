@@ -66,8 +66,8 @@ export interface ItemNavegacion {
 export const NAVEGACION: ItemNavegacion[] = [
   {
     href: "/panel",
-    etiqueta: "Inicio",
-    recurso: "inicio",
+    etiqueta: "Dashboard",
+    recurso: "dashboard",
     roles: ["admin", "recepcion", "asistente"],
     icono: "inicio",
   },
