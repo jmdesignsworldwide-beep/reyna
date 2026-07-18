@@ -2,6 +2,7 @@ import { requerirUsuaria } from "@/lib/auth";
 import { AuroraBackground } from "@/components/ui/AuroraBackground";
 import { Sidebar } from "@/components/panel/Sidebar";
 import { ThemeToggle } from "@/components/ui/ThemeToggle";
+import { PieCredito } from "@/components/ui/PieCredito";
 
 export default async function PanelLayout({
   children,
@@ -27,7 +28,10 @@ export default async function PanelLayout({
         </header>
 
         <main className="flex-1 px-6 py-8">
-          <div className="mx-auto w-full max-w-6xl">{children}</div>
+          <div className="mx-auto w-full max-w-6xl">
+            {children}
+            <PieCredito />
+          </div>
         </main>
       </div>
     </div>

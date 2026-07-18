@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { AuroraBackground } from "@/components/ui/AuroraBackground";
 import { HeartMark } from "@/components/ui/HeartMark";
 import { LoginForm } from "@/components/auth/LoginForm";
+import { PieCredito } from "@/components/ui/PieCredito";
 
 export const metadata: Metadata = {
   title: "Bienvenida",
@@ -61,10 +62,9 @@ export default function LoginPage() {
             <LoginForm />
           </Suspense>
 
-          <p className="mt-8 flex items-center justify-center gap-1.5 text-xs text-texto-secundario">
-            <HeartMark className="h-3.5 w-3.5" />
-            Cuidado con seguridad · JM Designs Worldwide
-          </p>
+          <div className="mt-8">
+            <PieCredito compacto />
+          </div>
         </section>
       </div>
     </main>
