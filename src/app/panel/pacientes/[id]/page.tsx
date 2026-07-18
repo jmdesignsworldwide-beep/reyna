@@ -10,6 +10,7 @@ import {
   EstudiosHistorial,
   type EstudioConUrl,
 } from "@/components/panel/EstudiosHistorial";
+import { LineaTiempo } from "@/components/consultas/LineaTiempo";
 import { calcularEdad, formatearFecha, formatearFechaHora } from "@/lib/formato";
 import {
   ETIQUETA_SEXO,
@@ -20,7 +21,7 @@ import {
   factoresDeRiesgo,
   nivelRiesgo,
 } from "@/lib/cardio";
-import type { Paciente, Estudio } from "@/types/database";
+import type { Paciente, Estudio, Consulta } from "@/types/database";
 
 export const metadata: Metadata = { title: "Ficha de paciente" };
 
@@ -54,6 +55,7 @@ export default async function FichaPacientePage({
   // Autoridad real: RLS. Aquí gateamos también la carga para NO generar URLs
   // firmadas de archivos clínicos a roles sin permiso (defensa en profundidad).
   const clinico = puedeUI(usuaria.rol, "estudios", "ver");
+  const verConsultas = puedeUI(usuaria.rol, "consultas", "ver");
 
   // Estudios + URLs firmadas (bucket privado). Solo para roles clínicos.
   let estudios: EstudioConUrl[] = [];
@@ -76,6 +78,17 @@ export default async function FichaPacientePage({
         return { ...e, archivo_url };
       }),
     );
+  }
+
+  // Historia clínica: consultas del paciente (recurso propio 'consultas').
+  let consultas: Consulta[] = [];
+  if (verConsultas) {
+    const { data: consultasRaw } = await supabase
+      .from("consultas")
+      .select("*")
+      .eq("paciente_id", p.id)
+      .order("fecha", { ascending: false });
+    consultas = (consultasRaw as Consulta[] | null) ?? [];
   }
 
   // Citas próximas (para el recordatorio de reevaluación).
@@ -339,6 +352,14 @@ export default async function FichaPacientePage({
           )}
         </Card>
       </div>
+
+      {verConsultas && (
+        <LineaTiempo
+          pacienteId={p.id}
+          consultas={consultas}
+          puedeCrear={puedeUI(usuaria.rol, "consultas", "crear")}
+        />
+      )}
 
       {clinico && (
         <EstudiosHistorial

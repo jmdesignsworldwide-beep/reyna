@@ -173,3 +173,47 @@ export const estadoCitaSchema = z.object({
 });
 
 export type CitaInput = z.infer<typeof citaSchema>;
+
+// ---------- Consultas (historia clínica) ----------
+// Signo vital: número dentro de un rango clínico, o null si viene vacío.
+const signoVital = (min: number, max: number) =>
+  z
+    .number()
+    .min(min, `Valor fuera de rango (${min}–${max}).`)
+    .max(max, `Valor fuera de rango (${min}–${max}).`)
+    .nullable();
+
+const diagnosticoSchema = z.object({
+  diagnostico: z.string().trim().min(1).max(200),
+  cie10: z.string().trim().max(15).optional().or(z.literal("")),
+});
+
+const prescripcionSchema = z.object({
+  medicamento: z.string().trim().min(1).max(120),
+  dosis: z.string().trim().max(80).optional().or(z.literal("")),
+  frecuencia: z.string().trim().max(80).optional().or(z.literal("")),
+  duracion: z.string().trim().max(80).optional().or(z.literal("")),
+});
+
+export const consultaSchema = z.object({
+  tipo: z.enum(["primera_vez", "seguimiento", "control", "post_estudio"]),
+  fecha: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "La fecha de la consulta es obligatoria."),
+  motivo: textoOpcional(300),
+  // Signos vitales
+  ta_sistolica: signoVital(40, 320),
+  ta_diastolica: signoVital(20, 200),
+  frecuencia_cardiaca: signoVital(20, 300),
+  frecuencia_respiratoria: signoVital(4, 80),
+  spo2: signoVital(40, 100),
+  temperatura: signoVital(30, 45),
+  peso: signoVital(0, 500),
+  talla: signoVital(0, 260),
+  exploracion_fisica: textoOpcional(4000),
+  diagnosticos: z.array(diagnosticoSchema).max(20),
+  plan_conducta: textoOpcional(4000),
+  prescripcion: z.array(prescripcionSchema).max(50),
+  proxima_reevaluacion: textoOpcional(120),
+  notas_evolucion: textoOpcional(4000),
+});
+
+export type ConsultaInput = z.infer<typeof consultaSchema>;

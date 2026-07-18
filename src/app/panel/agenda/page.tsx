@@ -119,6 +119,7 @@ export default async function AgendaPage({
         editar: puedeUI(usuaria.rol, "agenda", "editar"),
         borrar: puedeUI(usuaria.rol, "agenda", "borrar"),
       }}
+      puedeCrearConsulta={puedeUI(usuaria.rol, "consultas", "crear")}
       nuevoPacienteId={sp.nuevo && /^[0-9a-f-]{36}$/i.test(sp.nuevo) ? sp.nuevo : undefined}
     />
   );
