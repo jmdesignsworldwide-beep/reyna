@@ -51,25 +51,32 @@ export default async function FichaPacientePage({
   if (!data) notFound();
   const p = data as Paciente;
 
-  // Estudios + URLs firmadas (bucket privado).
-  const { data: estudiosRaw } = await supabase
-    .from("estudios_cardiologicos")
-    .select("*")
-    .eq("paciente_id", p.id)
-    .order("fecha_estudio", { ascending: false });
+  // Autoridad real: RLS. Aquí gateamos también la carga para NO generar URLs
+  // firmadas de archivos clínicos a roles sin permiso (defensa en profundidad).
+  const clinico = puedeUI(usuaria.rol, "estudios", "ver");
 
-  const estudios: EstudioConUrl[] = await Promise.all(
-    ((estudiosRaw as Estudio[] | null) ?? []).map(async (e) => {
-      let archivo_url: string | null = null;
-      if (e.archivo_path) {
-        const { data: firmada } = await supabase.storage
-          .from("estudios")
-          .createSignedUrl(e.archivo_path, 600);
-        archivo_url = firmada?.signedUrl ?? null;
-      }
-      return { ...e, archivo_url };
-    }),
-  );
+  // Estudios + URLs firmadas (bucket privado). Solo para roles clínicos.
+  let estudios: EstudioConUrl[] = [];
+  if (clinico) {
+    const { data: estudiosRaw } = await supabase
+      .from("estudios_cardiologicos")
+      .select("*")
+      .eq("paciente_id", p.id)
+      .order("fecha_estudio", { ascending: false });
+
+    estudios = await Promise.all(
+      ((estudiosRaw as Estudio[] | null) ?? []).map(async (e) => {
+        let archivo_url: string | null = null;
+        if (e.archivo_path) {
+          const { data: firmada } = await supabase.storage
+            .from("estudios")
+            .createSignedUrl(e.archivo_path, 600);
+          archivo_url = firmada?.signedUrl ?? null;
+        }
+        return { ...e, archivo_url };
+      }),
+    );
+  }
 
   // Citas próximas (para el recordatorio de reevaluación).
   const hoy = new Date().toISOString().slice(0, 10);
@@ -83,7 +90,6 @@ export default async function FichaPacientePage({
   const edad = calcularEdad(p.fecha_nacimiento);
   const puedeEditar = puedeUI(usuaria.rol, "pacientes", "editar");
   const puedeAgendar = puedeUI(usuaria.rol, "agenda", "crear");
-  const clinico = puedeUI(usuaria.rol, "estudios", "ver");
   const factores = factoresDeRiesgo(p);
   const riesgo = nivelRiesgo(factores.length);
   const claseImc = clasificacionIMC(p.imc);
@@ -334,12 +340,14 @@ export default async function FichaPacientePage({
         </Card>
       </div>
 
-      <EstudiosHistorial
-        pacienteId={p.id}
-        estudios={estudios}
-        puedeCrear={puedeUI(usuaria.rol, "estudios", "crear")}
-        puedeBorrar={puedeUI(usuaria.rol, "estudios", "borrar")}
-      />
+      {clinico && (
+        <EstudiosHistorial
+          pacienteId={p.id}
+          estudios={estudios}
+          puedeCrear={puedeUI(usuaria.rol, "estudios", "crear")}
+          puedeBorrar={puedeUI(usuaria.rol, "estudios", "borrar")}
+        />
+      )}
 
       {(p.referido_por || p.notas) && (
         <Card>
