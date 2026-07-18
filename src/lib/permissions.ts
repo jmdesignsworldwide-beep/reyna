@@ -29,18 +29,22 @@ const MATRIZ: Record<UserRole, Record<string, Accion[]>> = {
   admin: {
     pacientes: ["ver", "crear", "editar", "borrar"],
     estudios: ["ver", "crear", "editar", "borrar"],
+    consultas: ["ver", "crear", "editar", "borrar"],
     agenda: ["ver", "crear", "editar", "borrar"],
     usuarios: ["ver", "crear", "editar", "borrar"],
     auditoria: ["ver"],
   },
   recepcion: {
     pacientes: ["ver", "crear", "editar"],
-    // Sin acceso a estudios clínicos (data sensible): solo pacientes y agenda.
+    // Sin acceso a estudios ni al detalle clínico de consultas (data sensible):
+    // solo pacientes y agenda.
     agenda: ["ver", "crear", "editar", "borrar"],
   },
   asistente: {
     pacientes: ["ver", "editar"],
     estudios: ["ver", "crear", "editar"],
+    // Registra signos vitales y ve la historia clínica; no borra consultas.
+    consultas: ["ver", "crear", "editar"],
     agenda: ["ver"],
   },
 };

@@ -35,6 +35,7 @@ interface Props {
   horarios: SedeHorario[];
   pacientes: PacienteOpcion[];
   permisos: { crear: boolean; editar: boolean; borrar: boolean };
+  puedeCrearConsulta?: boolean;
   nuevoPacienteId?: string;
 }
 
@@ -46,7 +47,7 @@ const VISTAS: { v: Vista; t: string }[] = [
 ];
 
 export function AgendaCliente(props: Props) {
-  const { vista, anclaClave, citas, sedes, horarios, pacientes, permisos, nuevoPacienteId } = props;
+  const { vista, anclaClave, citas, sedes, horarios, pacientes, permisos, puedeCrearConsulta, nuevoPacienteId } = props;
   const router = useRouter();
   const ancla = fechaDesdeClave(anclaClave);
 
@@ -246,6 +247,7 @@ export function AgendaCliente(props: Props) {
           <Detalle
             cita={citaSel}
             permisos={permisos}
+            puedeCrearConsulta={puedeCrearConsulta ?? false}
             onEditar={() => setModal("editar")}
             onCerrar={() => setModal(null)}
           />
@@ -562,11 +564,13 @@ function VistaProximas({ citas, onSelect }: { citas: CitaConRel[]; onSelect: (c:
 function Detalle({
   cita,
   permisos,
+  puedeCrearConsulta,
   onEditar,
   onCerrar,
 }: {
   cita: CitaConRel;
   permisos: { editar: boolean; borrar: boolean };
+  puedeCrearConsulta: boolean;
   onEditar: () => void;
   onCerrar: () => void;
 }) {
@@ -654,6 +658,15 @@ function Detalle({
           </div>
         )}
       </dl>
+
+      {cita.paciente && puedeCrearConsulta && cita.estado !== "cancelada" && (
+        <Link
+          href={`/panel/pacientes/${cita.paciente.id}/consultas/nueva?cita=${cita.id}`}
+          className="flex items-center justify-center gap-1.5 rounded-suave bg-[linear-gradient(120deg,var(--rosa-principal),var(--rosa-medio))] px-4 py-2.5 text-sm font-medium text-white shadow-tarjeta transition-all hover:shadow-tarjeta-hover hover:brightness-105"
+        >
+          <HeartMark className="h-4 w-4" /> Registrar consulta
+        </Link>
+      )}
 
       {cita.paciente && (
         <Link

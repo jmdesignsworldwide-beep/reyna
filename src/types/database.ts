@@ -39,6 +39,53 @@ export type Medicamento = {
   frecuencia: string;
 };
 
+// ---------- Historia clínica (consultas) ----------
+export type TipoConsultaClinica =
+  | "primera_vez"
+  | "seguimiento"
+  | "control"
+  | "post_estudio";
+
+export type Diagnostico = {
+  diagnostico: string;
+  cie10: string;
+};
+
+export type ItemPrescripcion = {
+  medicamento: string;
+  dosis: string;
+  frecuencia: string;
+  duracion: string;
+};
+
+export type Consulta = {
+  id: string;
+  paciente_id: string;
+  cita_id: string | null;
+  fecha: string; // YYYY-MM-DD
+  tipo: TipoConsultaClinica;
+  motivo: string | null;
+  // Signos vitales
+  ta_sistolica: number | null;
+  ta_diastolica: number | null;
+  frecuencia_cardiaca: number | null;
+  frecuencia_respiratoria: number | null;
+  spo2: number | null;
+  temperatura: number | null;
+  peso: number | null;
+  talla: number | null;
+  imc: number | null; // columna generada
+  exploracion_fisica: string | null;
+  diagnosticos: Diagnostico[];
+  plan_conducta: string | null;
+  prescripcion: ItemPrescripcion[];
+  proxima_reevaluacion: string | null;
+  notas_evolucion: string | null;
+  created_by: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
 export type Paciente = {
   id: string;
   // Identificación y demográficos
@@ -309,6 +356,16 @@ export interface Database {
         Update: Partial<Omit<Cita, "id" | "created_at" | "updated_at">>;
         Relationships: [];
       };
+      consultas: {
+        Row: Consulta;
+        Insert: Partial<
+          Omit<Consulta, "id" | "imc" | "created_at" | "updated_at">
+        > & { paciente_id: string };
+        Update: Partial<
+          Omit<Consulta, "id" | "paciente_id" | "imc" | "created_at" | "updated_at">
+        >;
+        Relationships: [];
+      };
     };
     Views: { [_ in never]: never };
     Functions: {
@@ -329,6 +386,7 @@ export interface Database {
       tipo_estudio: TipoEstudio;
       tipo_consulta: TipoConsulta;
       estado_cita: EstadoCita;
+      tipo_consulta_clinica: TipoConsultaClinica;
     };
     CompositeTypes: { [_ in never]: never };
   };
