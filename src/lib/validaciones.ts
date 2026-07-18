@@ -217,3 +217,51 @@ export const consultaSchema = z.object({
 });
 
 export type ConsultaInput = z.infer<typeof consultaSchema>;
+
+// ---------- Evaluación clínica formal ----------
+const estudioRevisadoSchema = z.object({
+  id: z.string().max(60),
+  tipo: z.string().max(60),
+  fecha: z.string().max(20),
+});
+
+export const evaluacionSchema = z.object({
+  fecha: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "La fecha es obligatoria."),
+  motivo: textoOpcional(1000),
+  antecedentes: textoOpcional(4000),
+  antecedentes_familiares: textoOpcional(2000),
+  factores_riesgo: textoOpcional(2000),
+  ta_sistolica: signoVital(40, 320),
+  ta_diastolica: signoVital(20, 200),
+  frecuencia_cardiaca: signoVital(20, 300),
+  peso: signoVital(0, 500),
+  talla: signoVital(0, 260),
+  ex_inspeccion: textoOpcional(2000),
+  ex_auscultacion: textoOpcional(2000),
+  ex_ruidos_cardiacos: textoOpcional(2000),
+  ex_soplos: textoOpcional(2000),
+  ex_pulsos: textoOpcional(2000),
+  ex_edemas: textoOpcional(2000),
+  ex_ingurgitacion: textoOpcional(2000),
+  ex_otros: textoOpcional(2000),
+  estudios_revisados: z.array(estudioRevisadoSchema).max(50),
+  impresion_diagnostica: textoOpcional(4000),
+  recomendaciones: textoOpcional(4000),
+  riesgo_cv: z.enum(["bajo", "moderado", "alto", "muy_alto"]).nullable(),
+  consentimiento_texto: textoOpcional(4000),
+});
+
+export type EvaluacionInput = z.infer<typeof evaluacionSchema>;
+
+// Datos requeridos para firmar (sellar) una evaluación.
+export const firmarEvaluacionSchema = z.object({
+  firma_medico_nombre: z
+    .string()
+    .trim()
+    .min(3, "El nombre del médico que firma es obligatorio.")
+    .max(120),
+  paciente_acepto: z.boolean(),
+  paciente_nombre_firma: textoOpcional(120),
+});
+
+export type FirmarEvaluacionInput = z.infer<typeof firmarEvaluacionSchema>;

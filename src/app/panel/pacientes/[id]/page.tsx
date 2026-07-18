@@ -11,6 +11,7 @@ import {
   type EstudioConUrl,
 } from "@/components/panel/EstudiosHistorial";
 import { LineaTiempo } from "@/components/consultas/LineaTiempo";
+import { ListaEvaluaciones } from "@/components/evaluaciones/ListaEvaluaciones";
 import { calcularEdad, formatearFecha, formatearFechaHora } from "@/lib/formato";
 import {
   ETIQUETA_SEXO,
@@ -21,7 +22,12 @@ import {
   factoresDeRiesgo,
   nivelRiesgo,
 } from "@/lib/cardio";
-import type { Paciente, Estudio, Consulta } from "@/types/database";
+import type { Paciente, Estudio, Consulta, Evaluacion } from "@/types/database";
+
+type EvaluacionResumen = Pick<
+  Evaluacion,
+  "id" | "fecha" | "estado" | "riesgo_cv" | "motivo"
+>;
 
 export const metadata: Metadata = { title: "Ficha de paciente" };
 
@@ -89,6 +95,18 @@ export default async function FichaPacientePage({
       .eq("paciente_id", p.id)
       .order("fecha", { ascending: false });
     consultas = (consultasRaw as Consulta[] | null) ?? [];
+  }
+
+  // Evaluaciones formales del paciente (recurso propio 'evaluaciones').
+  const verEvaluaciones = puedeUI(usuaria.rol, "evaluaciones", "ver");
+  let evaluaciones: EvaluacionResumen[] = [];
+  if (verEvaluaciones) {
+    const { data: evalRaw } = await supabase
+      .from("evaluaciones")
+      .select("id, fecha, estado, riesgo_cv, motivo")
+      .eq("paciente_id", p.id)
+      .order("fecha", { ascending: false });
+    evaluaciones = (evalRaw as EvaluacionResumen[] | null) ?? [];
   }
 
   // Citas próximas (para el recordatorio de reevaluación).
@@ -358,6 +376,14 @@ export default async function FichaPacientePage({
           pacienteId={p.id}
           consultas={consultas}
           puedeCrear={puedeUI(usuaria.rol, "consultas", "crear")}
+        />
+      )}
+
+      {verEvaluaciones && (
+        <ListaEvaluaciones
+          pacienteId={p.id}
+          evaluaciones={evaluaciones}
+          puedeCrear={puedeUI(usuaria.rol, "evaluaciones", "crear")}
         />
       )}
 

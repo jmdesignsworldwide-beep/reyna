@@ -9,11 +9,15 @@
 
 ## Modelo de roles
 
-| Rol | Pacientes | Estudios clínicos | Consultas (historia clínica) | Agenda | Usuarias | Auditoría |
-|-----|-----------|-------------------|------------------------------|--------|----------|-----------|
-| **admin** (Dra. Reyna) | ver/crear/editar/borrar | ver/crear/editar/borrar | ver/crear/editar/borrar | ver/crear/editar/borrar | ver/crear/editar/borrar | ver |
-| **recepción** | ver/crear/editar | **sin acceso** | **sin acceso** | ver/crear/editar/borrar | — | — |
-| **asistente** | ver/editar | ver/crear/editar | ver/crear/editar (sin borrar) | ver | — | — |
+| Rol | Pacientes | Estudios clínicos | Consultas (historia clínica) | Evaluaciones formales | Agenda | Usuarias | Auditoría |
+|-----|-----------|-------------------|------------------------------|-----------------------|--------|----------|-----------|
+| **admin** (Dra. Reyna) | ver/crear/editar/borrar | ver/crear/editar/borrar | ver/crear/editar/borrar | ver/crear/editar/borrar + **firmar** | ver/crear/editar/borrar | ver/crear/editar/borrar | ver |
+| **recepción** | ver/crear/editar | **sin acceso** | **sin acceso** | **sin acceso** | ver/crear/editar/borrar | — | — |
+| **asistente** | ver/editar | ver/crear/editar | ver/crear/editar (sin borrar) | ver/crear/editar (sin borrar, **sin firmar**) | ver | — | — |
+
+> **Firma:** la firma de una evaluación es exclusiva del médico (administradora);
+> se valida como `rol === 'admin'` en la Server Action de firmar, no como columna
+> de la matriz.
 
 La matriz vive en la tabla `role_permissions` y se resuelve server-side con
 `private.puede(recurso, accion)`. El archivo `src/lib/permissions.ts` es un
@@ -22,11 +26,21 @@ La matriz vive en la tabla `role_permissions` y se resuelve server-side con
 ## Capas de defensa
 
 ### 1. Row Level Security (RLS) + FORCE
-Las **10 tablas** del esquema `public` nacen con `ENABLE` **y** `FORCE ROW LEVEL
+Las **11 tablas** del esquema `public` nacen con `ENABLE` **y** `FORCE ROW LEVEL
 SECURITY` (FORCE aplica incluso al dueño de la tabla):
 
 `profiles`, `audit_log`, `role_permissions`, `rate_limits`, `pacientes`,
-`estudios_cardiologicos`, `sedes`, `sede_horarios`, `citas`, `consultas`.
+`estudios_cardiologicos`, `sedes`, `sede_horarios`, `citas`, `consultas`,
+`evaluaciones`.
+
+### Inmutabilidad de documentos firmados
+Una **evaluación firmada** es un documento legal sellado: el trigger
+`guard_evaluacion_sellada` (BEFORE UPDATE/DELETE) bloquea **toda** modificación
+o borrado una vez `estado = 'firmada'`, **sin exención de `service_role`** — ni
+siquiera un proceso con la llave maestra puede alterarla. Al firmar se calcula un
+**hash SHA-256** del contenido canónico + datos de firma y se archiva un **PDF**
+en el bucket privado `evaluaciones` (signed URL temporal). El hash permite
+verificar que el documento no fue alterado.
 
 - **Negar por defecto:** sin política que lo permita, no hay acceso.
 - Las políticas de datos clínicos se atan a la matriz vía `private.puede(...)`.
