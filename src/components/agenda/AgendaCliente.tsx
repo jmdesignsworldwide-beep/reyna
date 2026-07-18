@@ -607,6 +607,21 @@ function Detalle({
         <EstadoPildora estado={cita.estado} />
       </div>
 
+      {(cita.paciente?.alergias ?? "").trim() !== "" && (
+        <div
+          role="alert"
+          className="flex items-start gap-3 rounded-suave border p-3"
+          style={{ borderColor: "#E0567A", backgroundColor: "#E0567A14" }}
+        >
+          <span className="flex h-6 w-6 flex-none items-center justify-center rounded-full bg-estado-urgente text-xs font-bold text-white">
+            !
+          </span>
+          <p className="text-sm text-texto-principal">
+            <strong className="text-estado-urgente">Alergia:</strong> {cita.paciente?.alergias}
+          </p>
+        </div>
+      )}
+
       <dl className="grid grid-cols-2 gap-3 rounded-suave bg-[var(--superficie-suave)] p-4 text-sm">
         <div>
           <dt className="text-xs uppercase tracking-wide text-texto-secundario">Fecha</dt>

@@ -3,7 +3,8 @@ import { createClient } from "@/lib/supabase/server";
 import { puedeUI } from "@/lib/permissions";
 import { DashboardCliente, type DashboardDatos, type CitaResumen } from "@/components/dashboard/DashboardCliente";
 import { factoresDeRiesgo } from "@/lib/cardio";
-import { claveFecha } from "@/lib/agenda";
+import { claveFecha, diasDeSemana } from "@/lib/agenda";
+import type { InsightItem } from "@/components/dashboard/DashboardCliente";
 import type { Paciente, Sede } from "@/types/database";
 
 const SELECT_CITA =
@@ -17,6 +18,9 @@ export default async function DashboardPage() {
   const ahora = new Date();
   const hoy = claveFecha(ahora);
   const inicioMes = `${ahora.getFullYear()}-${String(ahora.getMonth() + 1).padStart(2, "0")}-01T00:00:00`;
+  const semana = diasDeSemana(ahora);
+  const semanaIni = claveFecha(semana[0]!);
+  const semanaFin = claveFecha(semana[6]!);
 
   // ---- Datos comunes (respetan RLS) ----
   const [
@@ -28,6 +32,7 @@ export default async function DashboardPage() {
     { data: sedesRaw },
     { data: recientesPacRaw },
     { data: recientesCitasRaw },
+    { count: citasSemana },
   ] = await Promise.all([
     supabase.from("pacientes").select("id", { count: "exact", head: true }).eq("activo", true),
     supabase.from("pacientes").select("id", { count: "exact", head: true }).gte("created_at", inicioMes),
@@ -37,6 +42,7 @@ export default async function DashboardPage() {
     supabase.from("sedes").select("id, nombre, color").eq("activo", true).order("nombre"),
     supabase.from("pacientes").select("id, nombres, apellidos, created_at").eq("activo", true).order("created_at", { ascending: false }).limit(5),
     supabase.from("citas").select(SELECT_CITA).order("created_at", { ascending: false }).limit(5),
+    supabase.from("citas").select("id", { count: "exact", head: true }).gte("fecha", semanaIni).lte("fecha", semanaFin).neq("estado", "cancelada"),
   ]);
 
   const citasHoy = (citasHoyRaw as unknown as CitaResumen[] | null) ?? [];
@@ -61,6 +67,9 @@ export default async function DashboardPage() {
     created_at: p.created_at,
   }));
 
+  // ---- Insights inteligentes (solo datos reales) ----
+  const insights: InsightItem[] = [];
+
   // ---- Datos clínicos (solo admin / asistente) ----
   let clinicoDatos: DashboardDatos["clinico"] = null;
   if (clinico) {
@@ -81,8 +90,10 @@ export default async function DashboardPage() {
     const alergias: { id: string; nombre: string }[] = [];
     const reevaluaciones: { id: string; nombre: string }[] = [];
     let riesgoAlto = 0;
+    let htaSinSeguimiento = 0;
 
     for (const p of pac) {
+      if (p.rf_hipertension && !pacientesConCitaFutura.has(p.id)) htaSinSeguimiento++;
       const n = factoresDeRiesgo(p).length;
       if (n === 0) niveles.sin++;
       else if (n <= 2) niveles.bajo++;
@@ -114,6 +125,37 @@ export default async function DashboardPage() {
       (p) => factoresDeRiesgo(p).length >= 3 && !pacientesConCitaFutura.has(p.id),
     ).length;
 
+    // Insights clínicos (en cristiano, solo de datos reales)
+    const total = pac.length;
+    const pct = (n: number) => (total > 0 ? Math.round((n / total) * 100) : 0);
+    if (htaSinSeguimiento > 0) {
+      insights.push({
+        icono: "agenda",
+        color: "#E0567A",
+        pre: "Tienes",
+        fuerte: `${htaSinSeguimiento} ${htaSinSeguimiento === 1 ? "paciente hipertenso" : "pacientes hipertensos"}`,
+        post: "sin cita próxima agendada.",
+      });
+    }
+    if (total > 0 && (fc.hta > 0 || fc.dm > 0 || fc.disli > 0)) {
+      insights.push({
+        icono: "pacientes",
+        color: "#B14A73",
+        pre: "Perfil de tu consulta:",
+        fuerte: `${pct(fc.hta)}% hipertensos · ${pct(fc.dm)}% diabéticos · ${pct(fc.disli)}% dislipidémicos`,
+        post: "",
+      });
+    }
+    if (totalReeval > 0) {
+      insights.push({
+        icono: "cuenta",
+        color: "#E8A13C",
+        pre: "Hay",
+        fuerte: `${totalReeval} ${totalReeval === 1 ? "paciente de alto riesgo" : "pacientes de alto riesgo"}`,
+        post: "pendientes de reevaluación (sin cita próxima).",
+      });
+    }
+
     clinicoDatos = {
       distribNivel: [
         { etiqueta: "Sin factores", valor: niveles.sin, color: "#4CAF82" },
@@ -137,7 +179,20 @@ export default async function DashboardPage() {
     };
   }
 
+  // Insight general (todos los roles): agenda de la semana.
+  if ((citasSemana ?? 0) > 0) {
+    insights.push({
+      icono: "agenda",
+      color: "#4CAF82",
+      pre: "Tienes",
+      fuerte: `${citasSemana} ${citasSemana === 1 ? "cita" : "citas"} esta semana`,
+      post: sedes.length > 1 ? "entre las dos sedes." : "en tu agenda.",
+    });
+  }
+
   const datos: DashboardDatos = {
+    insights,
+    sinPacientes: (activos ?? 0) === 0,
     metricas: {
       activos: activos ?? 0,
       nuevosMes: nuevosMes ?? 0,

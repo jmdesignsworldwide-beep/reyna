@@ -48,6 +48,9 @@ export function FormularioCita({
   );
   const [abiertaLista, setAbiertaLista] = useState(false);
 
+  const pacienteSel = pacientes.find((p) => p.id === pacienteId);
+  const alergiaPaciente = (pacienteSel?.alergias ?? cita?.paciente?.alergias ?? "").trim();
+
   const [sedeId, setSedeId] = useState(cita?.sede_id ?? prefill?.sede_id ?? sedes[0]?.id ?? "");
   const [fecha, setFecha] = useState(cita?.fecha ?? prefill?.fecha ?? "");
   const [horaInicio, setHoraInicio] = useState(
@@ -160,6 +163,22 @@ export function FormularioCita({
           </ul>
         )}
       </div>
+
+      {/* Alerta clínica: alergia crítica del paciente */}
+      {alergiaPaciente !== "" && (
+        <div
+          role="alert"
+          className="flex items-start gap-3 rounded-suave border p-3"
+          style={{ borderColor: "#E0567A", backgroundColor: "#E0567A14" }}
+        >
+          <span className="flex h-6 w-6 flex-none items-center justify-center rounded-full bg-estado-urgente text-xs font-bold text-white">
+            !
+          </span>
+          <p className="text-sm text-texto-principal">
+            <strong className="text-estado-urgente">Alergia registrada:</strong> {alergiaPaciente}
+          </p>
+        </div>
+      )}
 
       {/* Sede + tipo */}
       <div className="grid gap-4 sm:grid-cols-2">

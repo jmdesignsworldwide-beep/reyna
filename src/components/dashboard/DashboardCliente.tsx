@@ -1,8 +1,10 @@
 "use client";
 
 import Link from "next/link";
+import { motion } from "framer-motion";
 import { Card } from "@/components/ui/Card";
 import { HeartMark } from "@/components/ui/HeartMark";
+import { Icono } from "@/components/panel/iconos";
 import { MetricaCard } from "@/components/dashboard/MetricaCard";
 import { GraficaDonut, type Segmento } from "@/components/dashboard/GraficaDonut";
 import { GraficaBarras, type Barra } from "@/components/dashboard/GraficaBarras";
@@ -21,7 +23,17 @@ export interface CitaResumen {
   sede: { nombre: string; color: string | null } | null;
 }
 
+export interface InsightItem {
+  icono: string;
+  color: string;
+  pre: string;
+  fuerte: string;
+  post: string;
+}
+
 export interface DashboardDatos {
+  insights: InsightItem[];
+  sinPacientes: boolean;
   metricas: { activos: number; nuevosMes: number; citasHoy: number; proximas: number };
   citasHoy: CitaResumen[];
   proximas: CitaResumen[];
@@ -93,6 +105,9 @@ export function DashboardCliente({
           <MetricaCard etiqueta="Próximas citas" valor={datos.metricas.proximas} icono="agenda" color="#E8A13C" detalle="Ver próximas →" delay={240} />
         </Link>
       </section>
+
+      {/* Insights inteligentes (datos reales) */}
+      <PanelInsights insights={datos.insights} sinPacientes={datos.sinPacientes} />
 
       <div className="grid gap-6 lg:grid-cols-3">
         {/* Columna principal */}
@@ -305,6 +320,72 @@ export function DashboardCliente({
         </div>
       </div>
     </div>
+  );
+}
+
+// ---------- Panel de insights inteligentes ----------
+function PanelInsights({ insights, sinPacientes }: { insights: InsightItem[]; sinPacientes: boolean }) {
+  return (
+    <motion.section
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5 }}
+      className="tarjeta relative overflow-hidden !p-6"
+    >
+      {/* aura decorativa */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute -right-10 -top-10 h-40 w-40 rounded-full blur-3xl"
+        style={{ background: "var(--aurora-1)" }}
+      />
+      <div className="relative">
+        <div className="mb-4 flex items-center gap-2">
+          <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[var(--tarjeta)]">
+            <HeartMark className="h-4 w-4 animate-heart-pulse" />
+          </span>
+          <h2 className="font-display text-xl font-semibold text-texto-principal">
+            Inteligencia de tu consulta
+          </h2>
+        </div>
+
+        {insights.length === 0 ? (
+          <div className="flex flex-col items-center gap-2 py-8 text-center">
+            <HeartMark className="h-8 w-8 opacity-60" />
+            <p className="max-w-md text-sm text-texto-secundario">
+              {sinPacientes
+                ? "Registra tus primeros pacientes para ver los insights de tu consulta."
+                : "Aún no hay suficiente información para resumir. A medida que registres pacientes y citas, aquí aparecerán los insights."}
+            </p>
+          </div>
+        ) : (
+          <ul className="space-y-2.5">
+            {insights.map((x, i) => (
+              <motion.li
+                key={i}
+                initial={{ opacity: 0, x: -10 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.1 + i * 0.09 }}
+                className="flex items-start gap-3 rounded-suave border border-[var(--borde)] bg-[var(--superficie)] p-3.5"
+              >
+                <span
+                  className="mt-0.5 flex h-8 w-8 flex-none items-center justify-center rounded-full"
+                  style={{ backgroundColor: `${x.color}18`, color: x.color }}
+                >
+                  <Icono nombre={x.icono} className="h-4 w-4" />
+                </span>
+                <p className="text-sm leading-relaxed text-texto-principal">
+                  {x.pre}{" "}
+                  <strong className="font-semibold" style={{ color: x.color }}>
+                    {x.fuerte}
+                  </strong>{" "}
+                  {x.post}
+                </p>
+              </motion.li>
+            ))}
+          </ul>
+        )}
+      </div>
+    </motion.section>
   );
 }
 
