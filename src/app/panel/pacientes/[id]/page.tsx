@@ -71,13 +71,24 @@ export default async function FichaPacientePage({
     }),
   );
 
+  // Citas próximas (para el recordatorio de reevaluación).
+  const hoy = new Date().toISOString().slice(0, 10);
+  const { count: citasFuturas } = await supabase
+    .from("citas")
+    .select("id", { count: "exact", head: true })
+    .eq("paciente_id", p.id)
+    .gte("fecha", hoy)
+    .neq("estado", "cancelada");
+
   const edad = calcularEdad(p.fecha_nacimiento);
   const puedeEditar = puedeUI(usuaria.rol, "pacientes", "editar");
   const puedeAgendar = puedeUI(usuaria.rol, "agenda", "crear");
+  const clinico = puedeUI(usuaria.rol, "estudios", "ver");
   const factores = factoresDeRiesgo(p);
   const riesgo = nivelRiesgo(factores.length);
   const claseImc = clasificacionIMC(p.imc);
   const tieneAlergias = (p.alergias ?? "").trim() !== "";
+  const reevaluacionPendiente = clinico && p.activo && factores.length >= 3 && (citasFuturas ?? 0) === 0;
 
   return (
     <div className="space-y-6">
@@ -132,6 +143,35 @@ export default async function FichaPacientePage({
             <p className="font-semibold text-estado-urgente">Alergias</p>
             <p className="mt-0.5 whitespace-pre-line text-texto-principal">{p.alergias}</p>
           </div>
+        </div>
+      )}
+
+      {/* Recordatorio de reevaluación (alto riesgo sin cita próxima) */}
+      {reevaluacionPendiente && (
+        <div
+          role="alert"
+          className="flex flex-wrap items-center justify-between gap-3 rounded-tarjeta border p-4"
+          style={{ borderColor: "#E8A13C66", backgroundColor: "#E8A13C14" }}
+        >
+          <div className="flex items-start gap-3">
+            <span className="flex h-7 w-7 flex-none items-center justify-center rounded-full bg-estado-advertencia text-sm font-bold text-white">
+              ↻
+            </span>
+            <div>
+              <p className="font-semibold text-estado-advertencia">Reevaluación pendiente</p>
+              <p className="mt-0.5 text-sm text-texto-principal">
+                Paciente de riesgo cardiovascular alto sin cita próxima agendada.
+              </p>
+            </div>
+          </div>
+          {puedeAgendar && (
+            <Link
+              href={`/panel/agenda?nuevo=${p.id}`}
+              className="rounded-suave border border-estado-advertencia px-4 py-2 text-sm font-medium text-estado-advertencia transition-colors hover:bg-[#E8A13C22]"
+            >
+              Agendar reevaluación
+            </Link>
+          )}
         </div>
       )}
 

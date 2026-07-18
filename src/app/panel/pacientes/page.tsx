@@ -7,6 +7,8 @@ import { Card } from "@/components/ui/Card";
 import { HeartMark } from "@/components/ui/HeartMark";
 import { BuscadorPacientes } from "@/components/panel/BuscadorPacientes";
 import { calcularEdad } from "@/lib/formato";
+import { factoresDeRiesgo, nivelRiesgo } from "@/lib/cardio";
+import type { Paciente } from "@/types/database";
 
 export const metadata: Metadata = { title: "Pacientes" };
 
@@ -20,10 +22,12 @@ export default async function PacientesPage({
   const supabase = await createClient();
   const q = (qRaw ?? "").trim();
 
+  const clinico = puedeUI(usuaria.rol, "estudios", "ver");
+
   let consulta = supabase
     .from("pacientes")
     .select(
-      "id, nombres, apellidos, cedula, fecha_nacimiento, telefono, ars, activo",
+      "id, nombres, apellidos, cedula, fecha_nacimiento, telefono, ars, activo, alergias, imc, rf_hipertension, rf_hipertension_desde, rf_diabetes, rf_diabetes_desde, rf_dislipidemia, rf_tabaquismo, rf_tabaquismo_paquetes_ano, rf_sedentarismo, rf_antecedentes_familiares, rf_antecedentes_familiares_parentesco, rf_enfermedad_renal",
     )
     .order("apellidos", { ascending: true })
     .limit(100);
@@ -92,24 +96,46 @@ export default async function PacientesPage({
               </thead>
               <tbody>
                 {lista.map((p) => {
+                  const p2 = p as unknown as Paciente;
                   const edad = calcularEdad(p.fecha_nacimiento);
+                  const nfac = clinico ? factoresDeRiesgo(p2).length : 0;
+                  const altoRiesgo = clinico && nfac >= 3;
+                  const riesgo = altoRiesgo ? nivelRiesgo(nfac) : null;
+                  const tieneAlergia = (p2.alergias ?? "").trim() !== "";
                   return (
                     <tr
                       key={p.id}
                       className="border-b border-[var(--borde)] last:border-0 transition-colors hover:bg-[var(--superficie-suave)]"
                     >
                       <td className="px-5 py-3.5">
-                        <Link
-                          href={`/panel/pacientes/${p.id}`}
-                          className="font-medium text-texto-principal hover:text-rosa-principal"
-                        >
-                          {p.apellidos}, {p.nombres}
-                        </Link>
-                        {!p.activo && (
-                          <span className="ml-2 text-xs text-texto-secundario">
-                            (archivado)
-                          </span>
-                        )}
+                        <div className="flex flex-wrap items-center gap-2">
+                          <Link
+                            href={`/panel/pacientes/${p.id}`}
+                            className="font-medium text-texto-principal hover:text-rosa-principal"
+                          >
+                            {p.apellidos}, {p.nombres}
+                          </Link>
+                          {tieneAlergia && (
+                            <span
+                              title="Alergia registrada"
+                              className="inline-flex items-center gap-1 rounded-full px-1.5 py-0.5 text-[10px] font-semibold"
+                              style={{ backgroundColor: "#E0567A1e", color: "#E0567A" }}
+                            >
+                              ♥ Alergia
+                            </span>
+                          )}
+                          {riesgo && (
+                            <span
+                              className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold"
+                              style={{ backgroundColor: `${riesgo.color}1e`, color: riesgo.color }}
+                            >
+                              {riesgo.etiqueta}
+                            </span>
+                          )}
+                          {!p.activo && (
+                            <span className="text-xs text-texto-secundario">(archivado)</span>
+                          )}
+                        </div>
                       </td>
                       <td className="px-5 py-3.5 text-texto-secundario">
                         {p.cedula ?? "—"}

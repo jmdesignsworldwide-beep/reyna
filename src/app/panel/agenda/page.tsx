@@ -22,6 +22,7 @@ export interface CitaConRel extends Cita {
     apellidos: string;
     cedula: string | null;
     telefono: string | null;
+    alergias: string | null;
   } | null;
   sede: { id: string; nombre: string; color: string | null; slug: string } | null;
 }
@@ -31,6 +32,7 @@ export interface PacienteOpcion {
   nombres: string;
   apellidos: string;
   cedula: string | null;
+  alergias: string | null;
 }
 
 function rango(vista: Vista, ancla: Date): { inicio: string; fin: string } {
@@ -51,7 +53,7 @@ function rango(vista: Vista, ancla: Date): { inicio: string; fin: string } {
 }
 
 const SELECT_CITA =
-  "*, paciente:pacientes(id,nombres,apellidos,cedula,telefono), sede:sedes(id,nombre,color,slug)";
+  "*, paciente:pacientes(id,nombres,apellidos,cedula,telefono,alergias), sede:sedes(id,nombre,color,slug)";
 
 export default async function AgendaPage({
   searchParams,
@@ -98,7 +100,7 @@ export default async function AgendaPage({
     supabase.from("sede_horarios").select("*"),
     supabase
       .from("pacientes")
-      .select("id, nombres, apellidos, cedula")
+      .select("id, nombres, apellidos, cedula, alergias")
       .eq("activo", true)
       .order("apellidos", { ascending: true })
       .limit(1000),
