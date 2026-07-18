@@ -33,11 +33,16 @@ export default async function PacientesPage({
     .limit(100);
 
   if (q) {
-    // Búsqueda segura: Supabase parametriza; escapamos comas para el filtro OR.
-    const t = q.replace(/[,%]/g, " ");
-    consulta = consulta.or(
-      `nombres.ilike.%${t}%,apellidos.ilike.%${t}%,cedula.ilike.%${t}%`,
-    );
+    // Búsqueda segura. Neutralizamos los metacaracteres del filtro PostgREST
+    // (coma separa condiciones; paréntesis/asterisco/dos puntos/backslash y el
+    // comodín % podrían alterar la expresión) antes de interpolar el término.
+    // Los nombres/cédulas reales no contienen estos símbolos, así que es seguro.
+    const t = q.replace(/[,()*:\\%]/g, " ").trim();
+    if (t) {
+      consulta = consulta.or(
+        `nombres.ilike.%${t}%,apellidos.ilike.%${t}%,cedula.ilike.%${t}%`,
+      );
+    }
   }
 
   const { data: pacientes } = await consulta;
