@@ -68,6 +68,69 @@ export function resumen(pagos: Pick<Pago, "monto">[], gastos: Pick<Gasto, "monto
   };
 }
 
+/** Margen de ganancia en % = (ingresos − egresos) / ingresos · 100. */
+export function porcentajeMargen(ingresos: number, egresos: number): number {
+  if (ingresos <= 0) return 0;
+  return Math.round(((ingresos - egresos) / ingresos) * 1000) / 10;
+}
+
+/** Ticket promedio = total / cantidad (0 si no hay pagos). */
+export function ticket(total: number, cantidad: number): number {
+  if (cantidad <= 0) return 0;
+  return Math.round((total / cantidad) * 100) / 100;
+}
+
+export type EstadoCrecimiento = "sube" | "baja" | "igual" | "nuevo" | "na";
+
+export interface Crecimiento {
+  pct: number;
+  estado: EstadoCrecimiento;
+}
+
+/**
+ * Comparativa contra el período anterior.
+ *  - previo 0 y actual > 0 → "nuevo" (no hay base para un %).
+ *  - ambos 0 → "na".
+ */
+export function crecimiento(actual: number, previo: number): Crecimiento {
+  if (previo === 0) {
+    if (actual === 0) return { pct: 0, estado: "na" };
+    return { pct: 0, estado: "nuevo" };
+  }
+  const pct = Math.round(((actual - previo) / Math.abs(previo)) * 1000) / 10;
+  if (pct === 0) return { pct: 0, estado: "igual" };
+  return { pct: Math.abs(pct), estado: pct > 0 ? "sube" : "baja" };
+}
+
+const MESES_CORTOS = [
+  "ene", "feb", "mar", "abr", "may", "jun",
+  "jul", "ago", "sep", "oct", "nov", "dic",
+];
+
+/** Etiqueta corta de mes: "jul 26". mes0 en base 0 (0 = enero). */
+export function nombreMesCorto(anio: number, mes0: number): string {
+  return `${MESES_CORTOS[((mes0 % 12) + 12) % 12]} ${String(anio).slice(2)}`;
+}
+
+/** Clave AAAA-MM para agrupar por mes. */
+export function claveMes(iso: string): string {
+  return iso.slice(0, 7);
+}
+
+/**
+ * Proyección lineal simple del cierre: acumulado / días transcurridos · días totales.
+ * Devuelve el acumulado si aún no hay ritmo medible.
+ */
+export function proyeccionLineal(
+  acumulado: number,
+  diasTranscurridos: number,
+  diasTotales: number,
+): number {
+  if (diasTranscurridos <= 0) return acumulado;
+  const proy = (acumulado / diasTranscurridos) * diasTotales;
+  return Math.round(proy * 100) / 100;
+}
+
 /** Agrupa montos por clave y devuelve total + porcentaje, orden descendente. */
 export function agrupar<T>(
   items: T[],
