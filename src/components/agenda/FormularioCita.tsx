@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 import { Alerta } from "@/components/ui/Alerta";
@@ -16,6 +16,7 @@ interface Props {
   horarios: SedeHorario[];
   pacientes: PacienteOpcion[];
   prefill?: { fecha?: string; sede_id?: string; hora_inicio?: string; paciente_id?: string };
+  sedePreferida?: string | null;
   onDone: () => void;
   onCancel: () => void;
 }
@@ -27,12 +28,14 @@ export function FormularioCita({
   horarios,
   pacientes,
   prefill,
+  sedePreferida,
   onDone,
   onCancel,
 }: Props) {
   const router = useRouter();
   const [cargando, setCargando] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const cajaPaciente = useRef<HTMLDivElement>(null);
 
   // Paciente (buscador)
   const prePaciente = prefill?.paciente_id
@@ -51,7 +54,9 @@ export function FormularioCita({
   const pacienteSel = pacientes.find((p) => p.id === pacienteId);
   const alergiaPaciente = (pacienteSel?.alergias ?? cita?.paciente?.alergias ?? "").trim();
 
-  const [sedeId, setSedeId] = useState(cita?.sede_id ?? prefill?.sede_id ?? sedes[0]?.id ?? "");
+  const [sedeId, setSedeId] = useState(
+    cita?.sede_id ?? prefill?.sede_id ?? sedePreferida ?? sedes[0]?.id ?? "",
+  );
   const [fecha, setFecha] = useState(cita?.fecha ?? prefill?.fecha ?? "");
   const [horaInicio, setHoraInicio] = useState(
     cita ? cita.hora_inicio.slice(0, 5) : prefill?.hora_inicio ?? "",
@@ -64,17 +69,34 @@ export function FormularioCita({
   const [motivo, setMotivo] = useState(cita?.motivo ?? "");
   const [notas, setNotas] = useState(cita?.notas ?? "");
 
+  // Si hay un paciente ya seleccionado y el texto coincide con su nombre, no se
+  // filtra (se muestra la lista completa para poder cambiarlo con comodidad).
   const pacientesFiltrados = useMemo(() => {
     const t = busqueda.trim().toLowerCase();
-    if (!t) return pacientes.slice(0, 8);
-    return pacientes
-      .filter(
-        (p) =>
-          `${p.nombres} ${p.apellidos}`.toLowerCase().includes(t) ||
-          (p.cedula ?? "").toLowerCase().includes(t),
-      )
-      .slice(0, 8);
-  }, [busqueda, pacientes]);
+    const nombreSel = pacienteId
+      ? `${pacienteSel?.apellidos ?? ""}, ${pacienteSel?.nombres ?? ""}`.toLowerCase()
+      : "";
+    const filtrar = t !== "" && t !== nombreSel;
+    const base = filtrar
+      ? pacientes.filter(
+          (p) =>
+            `${p.nombres} ${p.apellidos}`.toLowerCase().includes(t) ||
+            (p.cedula ?? "").toLowerCase().includes(t),
+        )
+      : pacientes;
+    return base.slice(0, 50); // scroll dentro del desplegable
+  }, [busqueda, pacientes, pacienteId, pacienteSel]);
+
+  // Cerrar el desplegable al hacer clic fuera.
+  useEffect(() => {
+    function fuera(e: MouseEvent) {
+      if (cajaPaciente.current && !cajaPaciente.current.contains(e.target as Node)) {
+        setAbiertaLista(false);
+      }
+    }
+    document.addEventListener("mousedown", fuera);
+    return () => document.removeEventListener("mousedown", fuera);
+  }, []);
 
   // Pista de horario de la sede para la fecha elegida
   const pistaHorario = useMemo(() => {
@@ -123,44 +145,77 @@ export function FormularioCita({
 
   return (
     <form onSubmit={enviar} className="space-y-4">
-      {/* Paciente */}
-      <div className="relative">
+      {/* Paciente — desplegable: al enfocar muestra la lista completa; filtra al escribir */}
+      <div className="relative" ref={cajaPaciente}>
         <label className="mb-1.5 block text-sm text-texto-secundario">
           Paciente <span className="text-estado-urgente">*</span>
         </label>
-        <input
-          value={busqueda}
-          onChange={(e) => {
-            setBusqueda(e.target.value);
-            setPacienteId("");
-            setAbiertaLista(true);
-          }}
-          onFocus={() => setAbiertaLista(true)}
-          placeholder="Buscar por nombre o cédula…"
-          className="campo"
-          autoComplete="off"
-        />
-        {abiertaLista && !pacienteId && pacientesFiltrados.length > 0 && (
-          <ul className="absolute z-30 mt-1 max-h-56 w-full overflow-auto rounded-suave border border-[var(--borde)] bg-[var(--superficie)] shadow-tarjeta">
-            {pacientesFiltrados.map((p) => (
-              <li key={p.id}>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setPacienteId(p.id);
-                    setBusqueda(`${p.apellidos}, ${p.nombres}`);
-                    setAbiertaLista(false);
-                  }}
-                  className="flex w-full flex-col items-start px-3 py-2 text-left text-sm hover:bg-[var(--superficie-suave)]"
-                >
-                  <span className="font-medium text-texto-principal">
-                    {p.apellidos}, {p.nombres}
-                  </span>
-                  {p.cedula && <span className="text-xs text-texto-secundario">{p.cedula}</span>}
-                </button>
-              </li>
-            ))}
-          </ul>
+        <div className="relative">
+          <input
+            value={busqueda}
+            onChange={(e) => {
+              setBusqueda(e.target.value);
+              setPacienteId("");
+              setAbiertaLista(true);
+            }}
+            onFocus={() => setAbiertaLista(true)}
+            placeholder="Haz clic para elegir, o escribe nombre o cédula…"
+            className="campo pr-9"
+            autoComplete="off"
+          />
+          <button
+            type="button"
+            onClick={() => setAbiertaLista((v) => !v)}
+            aria-label="Mostrar pacientes"
+            className="absolute right-2.5 top-1/2 -translate-y-1/2 text-texto-secundario transition-transform"
+            style={{ transform: `translateY(-50%) rotate(${abiertaLista ? 180 : 0}deg)` }}
+          >
+            ▾
+          </button>
+        </div>
+        {abiertaLista && (
+          <div className="absolute z-30 mt-1 w-full overflow-hidden rounded-suave border border-[var(--borde)] bg-[var(--superficie)] shadow-tarjeta-hover">
+            <p className="border-b border-[var(--borde)] px-3 py-1.5 text-[11px] uppercase tracking-wide text-texto-secundario">
+              {pacientes.length} {pacientes.length === 1 ? "paciente" : "pacientes"} · elige o escribe para filtrar
+            </p>
+            {pacientesFiltrados.length === 0 ? (
+              <p className="px-3 py-3 text-sm text-texto-secundario">
+                Sin coincidencias.
+              </p>
+            ) : (
+              <ul className="max-h-64 overflow-auto">
+                {pacientesFiltrados.map((p) => {
+                  const sel = p.id === pacienteId;
+                  return (
+                    <li key={p.id}>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setPacienteId(p.id);
+                          setBusqueda(`${p.apellidos}, ${p.nombres}`);
+                          setAbiertaLista(false);
+                        }}
+                        className="flex w-full items-center justify-between gap-2 px-3 py-2 text-left text-sm transition-colors hover:bg-[var(--superficie-suave)]"
+                        style={sel ? { backgroundColor: "var(--rosa-pastel)" } : undefined}
+                      >
+                        <span className="flex flex-col">
+                          <span className="font-medium text-texto-principal">
+                            {p.apellidos}, {p.nombres}
+                          </span>
+                          {p.cedula && (
+                            <span className="text-xs text-texto-secundario">
+                              Cédula {p.cedula}
+                            </span>
+                          )}
+                        </span>
+                        {sel && <span className="text-rosa-principal">✓</span>}
+                      </button>
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
+          </div>
         )}
       </div>
 

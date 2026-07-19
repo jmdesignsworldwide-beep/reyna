@@ -1149,6 +1149,13 @@ insert into public.categorias_gasto (nombre, orden) values
 on conflict (nombre) do nothing;
 
 
+-- ============================================================
+-- 0012 — Preferencia de sede en el perfil
+-- ============================================================
+alter table public.profiles
+  add column if not exists sede_preferida uuid references public.sedes (id) on delete set null;
+
+
 -- ############################################################
 -- VERIFICACIÓN DEL SECURITY ADVISOR
 -- Corre esta sección (idealmente por separado) para revisar cada resultado.

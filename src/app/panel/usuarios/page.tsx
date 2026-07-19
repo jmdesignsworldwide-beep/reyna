@@ -5,7 +5,7 @@ import { GestorUsuarias } from "@/components/panel/GestorUsuarias";
 import { HeartMark } from "@/components/ui/HeartMark";
 import type { UserRole } from "@/types/database";
 
-export const metadata: Metadata = { title: "Usuarias" };
+export const metadata: Metadata = { title: "Usuarios" };
 
 export interface UsuariaLista {
   id: string;
@@ -56,7 +56,7 @@ export default async function UsuariasPage() {
           <span>Administración</span>
         </div>
         <h1 className="mt-2 font-display text-3xl font-semibold text-texto-principal">
-          Usuarias del sistema
+          Usuarios del sistema
         </h1>
         <p className="mt-1 text-texto-secundario">
           Crea cuentas, asigna roles y controla el acceso. El último

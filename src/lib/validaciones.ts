@@ -309,3 +309,14 @@ export const categoriaGastoSchema = z.object({
   nombre: z.string().trim().min(2, "El nombre es obligatorio.").max(60),
 });
 export type CategoriaGastoInput = z.infer<typeof categoriaGastoSchema>;
+
+// ---------- Perfil propio ----------
+export const perfilSchema = z.object({
+  nombre_completo: z
+    .string()
+    .trim()
+    .min(3, "El nombre completo es obligatorio.")
+    .max(120),
+  telefono: textoOpcional(30),
+});
+export type PerfilInput = z.infer<typeof perfilSchema>;
