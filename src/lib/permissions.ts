@@ -32,6 +32,8 @@ const MATRIZ: Record<UserRole, Record<string, Accion[]>> = {
     consultas: ["ver", "crear", "editar", "borrar"],
     evaluaciones: ["ver", "crear", "editar", "borrar"],
     agenda: ["ver", "crear", "editar", "borrar"],
+    pagos: ["ver", "crear", "editar", "borrar"],
+    finanzas: ["ver", "crear", "editar", "borrar"],
     usuarios: ["ver", "crear", "editar", "borrar"],
     auditoria: ["ver"],
   },
@@ -40,6 +42,8 @@ const MATRIZ: Record<UserRole, Record<string, Accion[]>> = {
     // Sin acceso a estudios, consultas ni evaluaciones (data clínica sensible):
     // solo pacientes y agenda.
     agenda: ["ver", "crear", "editar", "borrar"],
+    // Puede cobrar (registrar pagos) pero NO ve el panel gerencial ni los gastos.
+    pagos: ["ver", "crear", "editar"],
   },
   asistente: {
     pacientes: ["ver", "editar"],
@@ -49,6 +53,7 @@ const MATRIZ: Record<UserRole, Record<string, Accion[]>> = {
     // Prepara el borrador de la evaluación; la firma es solo del médico.
     evaluaciones: ["ver", "crear", "editar"],
     agenda: ["ver"],
+    // Sin acceso financiero.
   },
 };
 
@@ -91,6 +96,13 @@ export const NAVEGACION: ItemNavegacion[] = [
     recurso: "agenda",
     roles: ["admin", "recepcion", "asistente"],
     icono: "agenda",
+  },
+  {
+    href: "/panel/finanzas",
+    etiqueta: "Finanzas",
+    recurso: "finanzas",
+    roles: ["admin"],
+    icono: "finanzas",
   },
   {
     href: "/panel/usuarios",

@@ -19,6 +19,22 @@
 > se valida como `rol === 'admin'` en la Server Action de firmar, no como columna
 > de la matriz.
 
+### Finanzas (recursos `pagos` y `finanzas`)
+| Rol | Pagos (cobrar) | Panel/Gastos/Cierre (`finanzas`) |
+|-----|----------------|----------------------------------|
+| **admin** (Dra. Reyna) | ver/crear/editar/borrar | ver/crear/editar/borrar |
+| **recepción** | ver/crear/editar | **sin acceso** |
+| **asistente** | **sin acceso** | **sin acceso** |
+
+Recepción puede **cobrar** (registrar pagos y emitir su recibo) pero **no** ve el
+panel gerencial, los gastos ni el cierre de día. El panel financiero calcula
+ingresos = `SUM(pagos.monto)` y egresos = `SUM(gastos.monto)`; **los pagos son la
+única fuente de ingresos** (sin doble conteo). El **NCF** es un campo manual
+opcional sin integración DGII: el recibo no tiene valor fiscal salvo que se
+registre un NCF válido. Recibos en bucket privado `recibos` y comprobantes de
+gasto en `comprobantes`, ambos solo por signed URL temporal. La exportación
+CSV/PDF del panel exige rol admin (`/api/finanzas/export`).
+
 La matriz vive en la tabla `role_permissions` y se resuelve server-side con
 `private.puede(recurso, accion)`. El archivo `src/lib/permissions.ts` es un
 **espejo solo para gatear la UI**; nunca es la autoridad.
@@ -26,12 +42,12 @@ La matriz vive en la tabla `role_permissions` y se resuelve server-side con
 ## Capas de defensa
 
 ### 1. Row Level Security (RLS) + FORCE
-Las **11 tablas** del esquema `public` nacen con `ENABLE` **y** `FORCE ROW LEVEL
+Las **14 tablas** del esquema `public` nacen con `ENABLE` **y** `FORCE ROW LEVEL
 SECURITY` (FORCE aplica incluso al dueño de la tabla):
 
 `profiles`, `audit_log`, `role_permissions`, `rate_limits`, `pacientes`,
 `estudios_cardiologicos`, `sedes`, `sede_horarios`, `citas`, `consultas`,
-`evaluaciones`.
+`evaluaciones`, `pagos`, `gastos`, `categorias_gasto`.
 
 ### Inmutabilidad de documentos firmados
 Una **evaluación firmada** es un documento legal sellado: el trigger
