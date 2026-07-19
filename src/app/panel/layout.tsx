@@ -3,6 +3,7 @@ import { AuroraBackground } from "@/components/ui/AuroraBackground";
 import { Sidebar } from "@/components/panel/Sidebar";
 import { ThemeToggle } from "@/components/ui/ThemeToggle";
 import { PieCredito } from "@/components/ui/PieCredito";
+import { BienvenidaCinematica } from "@/components/panel/BienvenidaCinematica";
 
 export default async function PanelLayout({
   children,
@@ -14,6 +15,7 @@ export default async function PanelLayout({
   return (
     <div className="relative flex min-h-screen">
       <AuroraBackground />
+      <BienvenidaCinematica nombre={primerNombre(usuaria.nombre_completo)} />
       <Sidebar rol={usuaria.rol} nombre={usuaria.nombre_completo} />
 
       <div className="flex min-w-0 flex-1 flex-col">

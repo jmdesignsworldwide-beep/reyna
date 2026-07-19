@@ -124,6 +124,35 @@
   }
 }
 
+/* ============================================================
+   Animaciones premium — login y bienvenida cinemática
+   ============================================================ */
+@keyframes deriva-1 {
+  0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+  50% { transform: translate3d(7%, 5%, 0) scale(1.14); }
+}
+@keyframes deriva-2 {
+  0%, 100% { transform: translate3d(0, 0, 0) scale(1.06); }
+  50% { transform: translate3d(-6%, -7%, 0) scale(1); }
+}
+@keyframes deriva-3 {
+  0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+  50% { transform: translate3d(4%, -5%, 0) scale(1.1); }
+}
+@keyframes giro-lento {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+@keyframes respiro-glow {
+  0%, 100% { opacity: 0.55; }
+  50% { opacity: 0.9; }
+}
+.anim-deriva-1 { animation: deriva-1 24s ease-in-out infinite; }
+.anim-deriva-2 { animation: deriva-2 30s ease-in-out infinite; }
+.anim-deriva-3 { animation: deriva-3 27s ease-in-out infinite; }
+.anim-giro { animation: giro-lento 52s linear infinite; }
+.anim-respiro { animation: respiro-glow 7s ease-in-out infinite; }
+
 /* Respeto por quienes prefieren menos movimiento */
 @media (prefers-reduced-motion: reduce) {
   *,
