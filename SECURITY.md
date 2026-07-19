@@ -1,11 +1,18 @@
 # Seguridad — Sistema Clínico Dra. Reyna Massiel
 
-> Este documento describe **qué protege cada capa** del sistema. El activo más
-> sensible son los **datos médicos reales de pacientes** (factores de riesgo,
-> alergias, antecedentes, estudios cardiológicos y sus archivos). El estándar
-> es defensa en profundidad: la interfaz **oculta**, pero el **servidor decide**,
-> y la autoridad final vive en la base de datos (RLS + `private.puede()`), no en
-> el navegador.
+> Este documento describe **qué protege cada capa** del sistema completo de
+> **6 módulos** (Pacientes, Agenda, Historia Clínica, Evaluación Formal,
+> Dashboard, Financiero). Los activos más sensibles son los **datos médicos
+> reales de pacientes** (factores de riesgo, alergias, antecedentes, estudios,
+> consultas, evaluaciones firmadas) y el **dinero** (pagos, gastos, panel
+> financiero). El estándar es defensa en profundidad: la interfaz **oculta**,
+> pero el **servidor decide**, y la autoridad final vive en la base de datos
+> (RLS + `private.puede()`), no en el navegador.
+>
+> **Última re-auditoría:** cobertura de los 6 módulos, con foco en Historia
+> Clínica, Evaluación Formal y Financiero. Resultado: sin hallazgos críticos ni
+> altos. Un atacante con cuenta de recepción, o sin cuenta, no puede ver, romper
+> ni escalar nada — ni llegar a datos clínicos ni al dinero.
 
 ## Modelo de roles
 
@@ -76,15 +83,28 @@ Las funciones internas/trigger de `public` (`handle_new_user`,
 `guard_admin_invariants`, `touch_updated_at`, `enforce_rate_limit`) tienen su
 ejecución **revocada** para `public/anon/authenticated`.
 
-### 3. Aislamiento de datos clínicos
-- Recepción **no** puede leer `estudios_cardiologicos` (RLS deniega). Además, la
-  ficha del paciente **no ejecuta** la consulta ni genera URLs firmadas para
-  roles sin `estudios.ver` (defensa en profundidad en el servidor).
-- Los **archivos** de estudios (PDF de ecos, ECG) están en un bucket **privado**
-  (`estudios`, `public=false`). Solo se acceden por **URL firmada temporal
-  (600 s)** generada server-side, y `storage.objects` tiene políticas RLS que
-  exigen `private.puede('estudios', …)`. No hay forma de listar ni adivinar
-  URLs de archivos de otros pacientes.
+### 3. Aislamiento de datos clínicos y financieros
+- Recepción **no** puede leer `estudios_cardiologicos`, `consultas` ni
+  `evaluaciones` (RLS deniega por `private.puede`). Además, la ficha del paciente
+  **no ejecuta** esas consultas ni genera URLs firmadas para roles sin permiso
+  (defensa en profundidad en el servidor: se gatea la carga antes de tocar la BD).
+- Recepción **no** puede ver el **panel financiero**, los **gastos** ni el
+  **cierre de día**: `/panel/finanzas*` exige `requerirRol("admin")` y el
+  endpoint `/api/finanzas/export` exige `requerirApi("admin")`; las tablas
+  `gastos`/`categorias_gasto` están atadas al recurso `finanzas` (solo admin).
+  Recepción sí puede registrar pagos (recurso `pagos`) y ver los recibos que
+  emite.
+- **Documentos firmados inmutables:** ver «Inmutabilidad de documentos firmados».
+- **Dinero exacto y server-side:** los montos se validan con Zod (`> 0`, tope) y
+  se guardan en `numeric(12,2)`; las sumas del panel se hacen **en centavos**
+  (`Math.round(m*100)`) para evitar descuadres de coma flotante. El cliente
+  nunca calcula totales de autoridad.
+- Los **archivos** (estudios eco/ECG, **recibos** de pago, **comprobantes** de
+  gasto) viven en buckets **privados** (`estudios`, `evaluaciones`, `recibos`,
+  `comprobantes`, todos `public=false`). Solo se acceden por **URL firmada
+  temporal (600 s)** generada server-side, y `storage.objects` tiene políticas
+  RLS por bucket atadas a `private.puede(...)`. No hay forma de listar ni
+  adivinar URLs de archivos ajenos.
 
 ### 4. Invariantes de administrador (trigger `guard_admin_invariants`)
 - Ninguna usuaria no-admin puede cambiar su propio `rol` ni `activo` (bloqueado
@@ -108,12 +128,18 @@ ejecución **revocada** para `public/anon/authenticated`.
   si un correo existe (anti-enumeración de cuentas).
 
 ### 6. Autoridad server-side (la UI no decide)
-- **Server Actions** (`pacientes`, `estudios`, `citas`): cada una revalida rol
-  con `puedeUI`, valida con Zod, aplica rate limit y audita. La RLS vuelve a
-  comprobar en la base de datos.
-- **Route handlers** (`/api/admin/*`, `/api/cuenta/clave`): protegidos por
-  `requerirApi(...roles)` (401/403), validados con Zod, auditados. El cambio de
-  contraseña **verifica la clave actual** server-side antes de aplicarla.
+- **Server Actions** de los 6 módulos (`pacientes`, `estudios`, `citas`,
+  `consultas`, `evaluaciones`, `pagos`, `gastos`): **cada** función mutante
+  empieza con `requerirUsuaria()` + chequeo de rol (`puedeUI(...)`, o
+  `rol === 'admin'` para firmar), valida con **Zod**, y **audita**. La RLS vuelve
+  a comprobar en la base de datos con la identidad real de la usuaria — aunque el
+  espejo de UI estuviera desactualizado, la BD es el backstop.
+- **Route handlers** (`/api/admin/*`, `/api/cuenta/clave`, `/api/finanzas/export`):
+  protegidos por `requerirApi(...roles)` (401/403), validados con Zod, auditados.
+  El export financiero exige `admin`; el cambio de contraseña **verifica la clave
+  actual** server-side antes de aplicarla.
+- Ningún endpoint devuelve datos sin sesión: `/` y `/panel/**` están tras el
+  middleware; las páginas admin usan `requerirRol("admin")`.
 
 ### 7. Validación e inyección
 - **SQL injection:** todo pasa por el cliente de Supabase (parametrizado); las
@@ -134,7 +160,8 @@ ejecución **revocada** para `public/anon/authenticated`.
 `enforce_rate_limit` (ventana fija en Postgres, compartida entre instancias
 serverless) respalda `limitarTasa`. Ante **cualquier** error de infraestructura
 **deniega** (fail-closed). Se aplica a crear usuaria, cambiar contraseña, crear
-paciente, crear estudio y crear/editar citas.
+paciente, crear estudio, crear/editar citas, crear consulta, crear evaluación,
+**crear pago y crear gasto**.
 
 ### 9. Cabeceras de seguridad
 - **CSP con nonce por petición** (middleware): en producción `script-src` usa
@@ -158,8 +185,12 @@ paciente, crear estudio y crear/editar citas.
 
 ## Auditoría
 `audit_log` registra actor, acción, entidad, metadata e IP de las acciones
-sensibles. Se escribe **únicamente** vía `service_role` (helper `registrarAuditoria`)
-y se lee **solo** por admin. No es escribible ni alterable desde el cliente.
+sensibles de los 6 módulos — incluidos **pagos** (`crear/actualizar/eliminar_pago`),
+**gastos** (`crear/eliminar_gasto`), la **firma** de evaluaciones
+(`firmar_evaluacion`, con el hash) y la gestión de cuentas. Se escribe
+**únicamente** vía `service_role` (helper `registrarAuditoria`) y se lee **solo**
+por admin. La tabla no tiene políticas de `insert/update/delete`, por lo que no
+es escribible ni alterable desde ningún cliente.
 
 ## Riesgo residual conocido
 - **Protección de contraseñas filtradas (HIBP)** en Supabase Auth requiere plan
