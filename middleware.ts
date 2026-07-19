@@ -41,11 +41,34 @@ export async function middleware(request: NextRequest) {
   let response = NextResponse.next({ request: { headers: requestHeaders } });
   response.headers.set("Content-Security-Policy", csp);
 
-  // ---- 2. Sesión de Supabase ----
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
+  const rutaProtegida = pathname === "/" || pathname.startsWith("/panel");
+
+  const redirigirA = (url: URL) => {
+    const redir = NextResponse.redirect(url);
+    response.cookies.getAll().forEach((c) => redir.cookies.set(c));
+    redir.headers.set("Content-Security-Policy", csp);
+    return redir;
+  };
+  const irALogin = () => {
+    const url = request.nextUrl.clone();
+    url.pathname = "/login";
+    url.search = "";
+    if (pathname !== "/") url.searchParams.set("redirigir", pathname);
+    return redirigirA(url);
+  };
+
+  // ---- 2. Sesión de Supabase — FALLA CERRADO ----
+  // Si faltan las variables de entorno, cualquier ruta protegida se manda al
+  // login (nunca se sirve el panel sin poder validar la sesión).
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  if (!supabaseUrl || !supabaseKey) {
+    return rutaProtegida ? irALogin() : response;
+  }
+
+  let user = null;
+  try {
+    const supabase = createServerClient(supabaseUrl, supabaseKey, {
       cookies: {
         getAll() {
           return request.cookies.getAll();
@@ -61,31 +84,18 @@ export async function middleware(request: NextRequest) {
           );
         },
       },
-    },
-  );
+    });
+    // getUser() revalida el token contra Supabase (no confía en la cookie a ciegas).
+    const resultado = await supabase.auth.getUser();
+    user = resultado.data.user;
+  } catch {
+    // Ante cualquier fallo validando la sesión: tratar como NO autenticada.
+    user = null;
+  }
 
-  // getUser() revalida el token contra Supabase (no confía en la cookie a ciegas).
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  // ---- 3. Protección de rutas ----
-  // Redirige preservando las cookies de sesión ya refrescadas por getUser().
-  const redirigirA = (url: URL) => {
-    const redir = NextResponse.redirect(url);
-    response.cookies.getAll().forEach((c) => redir.cookies.set(c));
-    redir.headers.set("Content-Security-Policy", csp);
-    return redir;
-  };
-
-  const rutaProtegida = pathname === "/" || pathname.startsWith("/panel");
-
+  // ---- 3. Protección de rutas (fail-closed) ----
   if (rutaProtegida && !user) {
-    const url = request.nextUrl.clone();
-    url.pathname = "/login";
-    url.search = "";
-    url.searchParams.set("redirigir", pathname);
-    return redirigirA(url);
+    return irALogin();
   }
 
   if (user && (pathname === "/login" || pathname === "/")) {
