@@ -12,6 +12,7 @@ import {
 } from "@/components/panel/EstudiosHistorial";
 import { LineaTiempo } from "@/components/consultas/LineaTiempo";
 import { ListaEvaluaciones } from "@/components/evaluaciones/ListaEvaluaciones";
+import { PagosPaciente, type PagoVista } from "@/components/finanzas/PagosPaciente";
 import { calcularEdad, formatearFecha, formatearFechaHora } from "@/lib/formato";
 import {
   ETIQUETA_SEXO,
@@ -107,6 +108,40 @@ export default async function FichaPacientePage({
       .eq("paciente_id", p.id)
       .order("fecha", { ascending: false });
     evaluaciones = (evalRaw as EvaluacionResumen[] | null) ?? [];
+  }
+
+  // Pagos del paciente (recurso 'pagos'; recepción y admin).
+  const verPagos = puedeUI(usuaria.rol, "pagos", "ver");
+  let pagos: PagoVista[] = [];
+  if (verPagos) {
+    const { data: pagosRaw } = await supabase
+      .from("pagos")
+      .select("id, recibo_numero, fecha, monto, tipo, concepto, metodo_pago, pdf_path")
+      .eq("paciente_id", p.id)
+      .order("fecha", { ascending: false });
+    pagos = await Promise.all(
+      ((pagosRaw as (PagoVista & { pdf_path: string | null })[] | null) ?? []).map(
+        async (pg) => {
+          let recibo_url: string | null = null;
+          if (pg.pdf_path) {
+            const { data: firmada } = await supabase.storage
+              .from("recibos")
+              .createSignedUrl(pg.pdf_path, 600);
+            recibo_url = firmada?.signedUrl ?? null;
+          }
+          return {
+            id: pg.id,
+            recibo_numero: pg.recibo_numero,
+            fecha: pg.fecha,
+            monto: pg.monto,
+            tipo: pg.tipo,
+            concepto: pg.concepto,
+            metodo_pago: pg.metodo_pago,
+            recibo_url,
+          };
+        },
+      ),
+    );
   }
 
   // Citas próximas (para el recordatorio de reevaluación).
@@ -384,6 +419,16 @@ export default async function FichaPacientePage({
           pacienteId={p.id}
           evaluaciones={evaluaciones}
           puedeCrear={puedeUI(usuaria.rol, "evaluaciones", "crear")}
+        />
+      )}
+
+      {verPagos && (
+        <PagosPaciente
+          pacienteId={p.id}
+          pacienteNombre={`${p.nombres} ${p.apellidos}`}
+          pagos={pagos}
+          puedeCrear={puedeUI(usuaria.rol, "pagos", "crear")}
+          puedeBorrar={puedeUI(usuaria.rol, "pagos", "borrar")}
         />
       )}
 

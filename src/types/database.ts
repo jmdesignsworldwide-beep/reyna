@@ -58,6 +58,55 @@ export type ItemPrescripcion = {
   duracion: string;
 };
 
+// ---------- Finanzas ----------
+export type MetodoPago = "efectivo" | "transferencia" | "tarjeta";
+export type TipoPago =
+  | "consulta"
+  | "ecocardiograma"
+  | "electrocardiograma"
+  | "chequeo"
+  | "otro";
+
+export type CategoriaGasto = {
+  id: string;
+  nombre: string;
+  activo: boolean;
+  orden: number;
+  created_at: string;
+};
+
+export type Pago = {
+  id: string;
+  paciente_id: string | null;
+  cita_id: string | null;
+  consulta_id: string | null;
+  recibo_numero: number;
+  fecha: string;
+  monto: number;
+  tipo: TipoPago;
+  concepto: string | null;
+  metodo_pago: MetodoPago;
+  ncf: string | null;
+  notas: string | null;
+  pdf_path: string | null;
+  created_by: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
+export type Gasto = {
+  id: string;
+  fecha: string;
+  monto: number;
+  categoria_id: string | null;
+  metodo_pago: MetodoPago;
+  nota: string | null;
+  comprobante_path: string | null;
+  created_by: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
 // ---------- Evaluación clínica formal ----------
 export type EstadoEvaluacion = "borrador" | "firmada";
 export type RiesgoCV = "bajo" | "moderado" | "alto" | "muy_alto";
@@ -426,6 +475,32 @@ export interface Database {
         >;
         Relationships: [];
       };
+      categorias_gasto: {
+        Row: CategoriaGasto;
+        Insert: Partial<Omit<CategoriaGasto, "id" | "created_at">> & {
+          nombre: string;
+        };
+        Update: Partial<Omit<CategoriaGasto, "id" | "created_at">>;
+        Relationships: [];
+      };
+      pagos: {
+        Row: Pago;
+        Insert: Partial<
+          Omit<Pago, "id" | "recibo_numero" | "created_at" | "updated_at">
+        > & { monto: number };
+        Update: Partial<
+          Omit<Pago, "id" | "recibo_numero" | "created_at" | "updated_at">
+        >;
+        Relationships: [];
+      };
+      gastos: {
+        Row: Gasto;
+        Insert: Partial<Omit<Gasto, "id" | "created_at" | "updated_at">> & {
+          monto: number;
+        };
+        Update: Partial<Omit<Gasto, "id" | "created_at" | "updated_at">>;
+        Relationships: [];
+      };
     };
     Views: { [_ in never]: never };
     Functions: {
@@ -449,6 +524,8 @@ export interface Database {
       tipo_consulta_clinica: TipoConsultaClinica;
       estado_evaluacion: EstadoEvaluacion;
       riesgo_cv: RiesgoCV;
+      metodo_pago: MetodoPago;
+      tipo_pago: TipoPago;
     };
     CompositeTypes: { [_ in never]: never };
   };

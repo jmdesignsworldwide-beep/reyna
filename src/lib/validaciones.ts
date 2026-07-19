@@ -265,3 +265,47 @@ export const firmarEvaluacionSchema = z.object({
 });
 
 export type FirmarEvaluacionInput = z.infer<typeof firmarEvaluacionSchema>;
+
+// ---------- Finanzas ----------
+const montoSchema = z
+  .number({ invalid_type_error: "El monto es obligatorio." })
+  .finite("Monto inválido.")
+  .gt(0, "El monto debe ser mayor que cero.")
+  .lt(100000000, "El monto excede el máximo permitido.");
+
+const metodoPagoSchema = z.enum(["efectivo", "transferencia", "tarjeta"]);
+const fechaSchema = z
+  .string()
+  .regex(/^\d{4}-\d{2}-\d{2}$/, "La fecha es obligatoria.");
+
+export const pagoSchema = z.object({
+  paciente_id: z.string().uuid().nullable(),
+  fecha: fechaSchema,
+  monto: montoSchema,
+  tipo: z.enum([
+    "consulta",
+    "ecocardiograma",
+    "electrocardiograma",
+    "chequeo",
+    "otro",
+  ]),
+  concepto: textoOpcional(200),
+  metodo_pago: metodoPagoSchema,
+  ncf: textoOpcional(30),
+  notas: textoOpcional(500),
+});
+export type PagoInput = z.infer<typeof pagoSchema>;
+
+export const gastoSchema = z.object({
+  fecha: fechaSchema,
+  monto: montoSchema,
+  categoria_id: z.string().uuid().nullable(),
+  metodo_pago: metodoPagoSchema,
+  nota: textoOpcional(500),
+});
+export type GastoInput = z.infer<typeof gastoSchema>;
+
+export const categoriaGastoSchema = z.object({
+  nombre: z.string().trim().min(2, "El nombre es obligatorio.").max(60),
+});
+export type CategoriaGastoInput = z.infer<typeof categoriaGastoSchema>;

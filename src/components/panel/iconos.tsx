@@ -51,6 +51,14 @@ export function Icono({ nombre, className = "h-5 w-5" }: { nombre: string; class
           <path d="M8 11h8M8 15h5" />
         </svg>
       );
+    case "finanzas":
+      return (
+        <svg {...props}>
+          <rect x="2.5" y="6" width="19" height="12" rx="2" />
+          <circle cx="12" cy="12" r="2.6" />
+          <path d="M6 9.5v5M18 9.5v5" />
+        </svg>
+      );
     case "cuenta":
       return (
         <svg {...props}>
