@@ -17,29 +17,35 @@ export interface UsuariaActual {
  * getUser() valida el token contra Supabase (no confía solo en la cookie).
  */
 export async function obtenerUsuaria(): Promise<UsuariaActual | null> {
-  const supabase = await createClient();
+  // Falla cerrado: cualquier error (env faltante, red, sesión inválida) se
+  // trata como NO autenticada → las páginas protegidas redirigen al login.
+  try {
+    const supabase = await createClient();
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
 
-  if (!user) return null;
+    if (!user) return null;
 
-  const { data: perfil } = await supabase
-    .from("profiles")
-    .select("nombre_completo, rol, activo")
-    .eq("id", user.id)
-    .single();
+    const { data: perfil } = await supabase
+      .from("profiles")
+      .select("nombre_completo, rol, activo")
+      .eq("id", user.id)
+      .single();
 
-  if (!perfil) return null;
+    if (!perfil) return null;
 
-  return {
-    id: user.id,
-    email: user.email ?? "",
-    nombre_completo: perfil.nombre_completo,
-    rol: perfil.rol,
-    activo: perfil.activo,
-  };
+    return {
+      id: user.id,
+      email: user.email ?? "",
+      nombre_completo: perfil.nombre_completo,
+      rol: perfil.rol,
+      activo: perfil.activo,
+    };
+  } catch {
+    return null;
+  }
 }
 
 /**
