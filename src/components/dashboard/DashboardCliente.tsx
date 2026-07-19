@@ -11,6 +11,7 @@ import { GraficaBarras, type Barra } from "@/components/dashboard/GraficaBarras"
 import { ETIQUETA_TIPO, ETIQUETA_ESTADO, COLOR_ESTADO, formatearHora, fechaLarga } from "@/lib/agenda";
 import { ETIQUETAS_ROL } from "@/lib/permissions";
 import { formatearFecha } from "@/lib/formato";
+import { Saludo } from "@/components/ui/Saludo";
 import type { UserRole } from "@/types/database";
 
 export interface CitaResumen {
@@ -49,13 +50,6 @@ export interface DashboardDatos {
   } | null;
 }
 
-function saludo(): string {
-  const h = new Date().getHours();
-  if (h < 12) return "Buenos días";
-  if (h < 19) return "Buenas tardes";
-  return "Buenas noches";
-}
-
 export function DashboardCliente({
   nombre,
   rol,
@@ -77,7 +71,7 @@ export function DashboardCliente({
           <span>Panel de la consulta</span>
         </div>
         <h1 className="mt-2 font-display text-4xl font-semibold text-texto-principal">
-          {saludo()}, <span className="texto-degradado">{primer}</span>
+          <Saludo />, <span className="texto-degradado">{primer}</span>
         </h1>
         <p className="mt-1 text-texto-secundario">
           {ETIQUETAS_ROL[rol]} ·{" "}
