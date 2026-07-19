@@ -23,19 +23,19 @@
 }
 
 .dark {
-  --fondo: #1c1218;          /* Base vino casi negra */
-  --superficie: #322330;     /* Tarjetas: claramente más claras que el fondo */
-  --superficie-suave: #3c2b38;
-  --tarjeta: #3a2836;
-  --borde: rgba(240, 170, 200, 0.22); /* Borde visible para separar tarjetas */
-  --texto-principal: #f8ecf2; /* Casi blanco rosado — alto contraste */
-  --texto-secundario: #d9c0cd; /* Claro y legible (AA) sobre superficie */
-  --rosa-principal: #f0a0c0;  /* Brillante para números, títulos y enlaces */
-  --rosa-medio: #e88bad;
-  --rosa-hover: #f6b6d0;
-  --aurora-1: rgba(240, 160, 192, 0.22);
-  --aurora-2: rgba(70, 34, 52, 0.5);
-  --aurora-3: rgba(28, 18, 24, 0.6);
+  --fondo: #1a1016;          /* Base vino casi negra */
+  --superficie: #3a2a38;     /* Tarjetas: claramente más claras que el fondo */
+  --superficie-suave: #453242;
+  --tarjeta: #453242;
+  --borde: rgba(244, 184, 210, 0.28); /* Borde visible para separar tarjetas */
+  --texto-principal: #fdf3f8; /* Casi blanco rosado — máximo contraste */
+  --texto-secundario: #e7d2de; /* Claro y legible (AA amplio) sobre superficie */
+  --rosa-principal: #f6b0cd;  /* Brillante para números, títulos y enlaces */
+  --rosa-medio: #f09bbb;
+  --rosa-hover: #ffc2dc;
+  --aurora-1: rgba(240, 160, 192, 0.16);
+  --aurora-2: rgba(70, 34, 52, 0.4);
+  --aurora-3: rgba(26, 16, 22, 0.6);
 }
 
 @layer base {
