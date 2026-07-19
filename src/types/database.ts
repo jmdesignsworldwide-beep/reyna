@@ -316,6 +316,7 @@ export type Profile = {
   telefono: string | null;
   rol: UserRole;
   activo: boolean;
+  sede_preferida: string | null;
   created_at: string;
   updated_at: string;
 };
@@ -353,6 +354,7 @@ export interface Database {
           telefono?: string | null;
           rol?: UserRole;
           activo?: boolean;
+          sede_preferida?: string | null;
           created_at?: string;
           updated_at?: string;
         };
@@ -363,6 +365,7 @@ export interface Database {
           telefono?: string | null;
           rol?: UserRole;
           activo?: boolean;
+          sede_preferida?: string | null;
           created_at?: string;
           updated_at?: string;
         };

@@ -106,7 +106,7 @@ export const NAVEGACION: ItemNavegacion[] = [
   },
   {
     href: "/panel/usuarios",
-    etiqueta: "Usuarias",
+    etiqueta: "Usuarios",
     recurso: "usuarios",
     roles: ["admin"],
     icono: "usuarios",

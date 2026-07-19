@@ -36,6 +36,7 @@ interface Props {
   pacientes: PacienteOpcion[];
   permisos: { crear: boolean; editar: boolean; borrar: boolean };
   puedeCrearConsulta?: boolean;
+  sedePreferida?: string | null;
   nuevoPacienteId?: string;
 }
 
@@ -47,7 +48,7 @@ const VISTAS: { v: Vista; t: string }[] = [
 ];
 
 export function AgendaCliente(props: Props) {
-  const { vista, anclaClave, citas, sedes, horarios, pacientes, permisos, puedeCrearConsulta, nuevoPacienteId } = props;
+  const { vista, anclaClave, citas, sedes, horarios, pacientes, permisos, puedeCrearConsulta, sedePreferida, nuevoPacienteId } = props;
   const router = useRouter();
   const ancla = fechaDesdeClave(anclaClave);
 
@@ -236,6 +237,7 @@ export function AgendaCliente(props: Props) {
           horarios={horarios}
           pacientes={pacientes}
           prefill={prefill}
+          sedePreferida={sedePreferida}
           onDone={() => setModal(null)}
           onCancel={() => setModal(null)}
         />

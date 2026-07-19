@@ -95,16 +95,20 @@ export default async function AgendaPage({
     citas = (data as CitaConRel[] | null) ?? [];
   }
 
-  const [{ data: sedes }, { data: horarios }, { data: pacientes }] = await Promise.all([
-    supabase.from("sedes").select("*").eq("activo", true).order("nombre"),
-    supabase.from("sede_horarios").select("*"),
-    supabase
-      .from("pacientes")
-      .select("id, nombres, apellidos, cedula, alergias")
-      .eq("activo", true)
-      .order("apellidos", { ascending: true })
-      .limit(1000),
-  ]);
+  const [{ data: sedes }, { data: horarios }, { data: pacientes }, { data: perfil }] =
+    await Promise.all([
+      supabase.from("sedes").select("*").eq("activo", true).order("nombre"),
+      supabase.from("sede_horarios").select("*"),
+      supabase
+        .from("pacientes")
+        .select("id, nombres, apellidos, cedula, alergias")
+        .eq("activo", true)
+        .order("apellidos", { ascending: true })
+        .limit(1000),
+      supabase.from("profiles").select("*").eq("id", usuaria.id).single(),
+    ]);
+  const sedePreferida =
+    (perfil as { sede_preferida?: string | null } | null)?.sede_preferida ?? null;
 
   return (
     <AgendaCliente
@@ -120,6 +124,7 @@ export default async function AgendaPage({
         borrar: puedeUI(usuaria.rol, "agenda", "borrar"),
       }}
       puedeCrearConsulta={puedeUI(usuaria.rol, "consultas", "crear")}
+      sedePreferida={sedePreferida}
       nuevoPacienteId={sp.nuevo && /^[0-9a-f-]{36}$/i.test(sp.nuevo) ? sp.nuevo : undefined}
     />
   );
