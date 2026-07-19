@@ -30,13 +30,14 @@ const MATRIZ: Record<UserRole, Record<string, Accion[]>> = {
     pacientes: ["ver", "crear", "editar", "borrar"],
     estudios: ["ver", "crear", "editar", "borrar"],
     consultas: ["ver", "crear", "editar", "borrar"],
+    evaluaciones: ["ver", "crear", "editar", "borrar"],
     agenda: ["ver", "crear", "editar", "borrar"],
     usuarios: ["ver", "crear", "editar", "borrar"],
     auditoria: ["ver"],
   },
   recepcion: {
     pacientes: ["ver", "crear", "editar"],
-    // Sin acceso a estudios ni al detalle clínico de consultas (data sensible):
+    // Sin acceso a estudios, consultas ni evaluaciones (data clínica sensible):
     // solo pacientes y agenda.
     agenda: ["ver", "crear", "editar", "borrar"],
   },
@@ -45,6 +46,8 @@ const MATRIZ: Record<UserRole, Record<string, Accion[]>> = {
     estudios: ["ver", "crear", "editar"],
     // Registra signos vitales y ve la historia clínica; no borra consultas.
     consultas: ["ver", "crear", "editar"],
+    // Prepara el borrador de la evaluación; la firma es solo del médico.
+    evaluaciones: ["ver", "crear", "editar"],
     agenda: ["ver"],
   },
 };

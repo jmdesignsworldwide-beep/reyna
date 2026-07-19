@@ -58,6 +58,56 @@ export type ItemPrescripcion = {
   duracion: string;
 };
 
+// ---------- Evaluación clínica formal ----------
+export type EstadoEvaluacion = "borrador" | "firmada";
+export type RiesgoCV = "bajo" | "moderado" | "alto" | "muy_alto";
+
+export type EstudioRevisado = {
+  id: string;
+  tipo: string;
+  fecha: string;
+};
+
+export type Evaluacion = {
+  id: string;
+  paciente_id: string;
+  fecha: string;
+  estado: EstadoEvaluacion;
+  motivo: string | null;
+  antecedentes: string | null;
+  antecedentes_familiares: string | null;
+  factores_riesgo: string | null;
+  ta_sistolica: number | null;
+  ta_diastolica: number | null;
+  frecuencia_cardiaca: number | null;
+  peso: number | null;
+  talla: number | null;
+  imc: number | null; // generada
+  ex_inspeccion: string | null;
+  ex_auscultacion: string | null;
+  ex_ruidos_cardiacos: string | null;
+  ex_soplos: string | null;
+  ex_pulsos: string | null;
+  ex_edemas: string | null;
+  ex_ingurgitacion: string | null;
+  ex_otros: string | null;
+  estudios_revisados: EstudioRevisado[];
+  impresion_diagnostica: string | null;
+  recomendaciones: string | null;
+  riesgo_cv: RiesgoCV | null;
+  consentimiento_texto: string | null;
+  paciente_acepto: boolean;
+  paciente_nombre_firma: string | null;
+  firmada_por: string | null;
+  firmada_en: string | null;
+  firma_medico_nombre: string | null;
+  hash_integridad: string | null;
+  pdf_path: string | null;
+  created_by: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
 export type Consulta = {
   id: string;
   paciente_id: string;
@@ -366,6 +416,16 @@ export interface Database {
         >;
         Relationships: [];
       };
+      evaluaciones: {
+        Row: Evaluacion;
+        Insert: Partial<
+          Omit<Evaluacion, "id" | "imc" | "created_at" | "updated_at">
+        > & { paciente_id: string };
+        Update: Partial<
+          Omit<Evaluacion, "id" | "paciente_id" | "imc" | "created_at" | "updated_at">
+        >;
+        Relationships: [];
+      };
     };
     Views: { [_ in never]: never };
     Functions: {
@@ -387,6 +447,8 @@ export interface Database {
       tipo_consulta: TipoConsulta;
       estado_cita: EstadoCita;
       tipo_consulta_clinica: TipoConsultaClinica;
+      estado_evaluacion: EstadoEvaluacion;
+      riesgo_cv: RiesgoCV;
     };
     CompositeTypes: { [_ in never]: never };
   };
