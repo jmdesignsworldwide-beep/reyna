@@ -4,6 +4,7 @@ import { Sidebar } from "@/components/panel/Sidebar";
 import { ThemeToggle } from "@/components/ui/ThemeToggle";
 import { PieCredito } from "@/components/ui/PieCredito";
 import { BienvenidaCinematica } from "@/components/panel/BienvenidaCinematica";
+import { Saludo } from "@/components/ui/Saludo";
 
 export default async function PanelLayout({
   children,
@@ -21,7 +22,7 @@ export default async function PanelLayout({
       <div className="flex min-w-0 flex-1 flex-col">
         <header className="sticky top-0 z-10 flex items-center justify-between border-b border-[var(--borde)] bg-[var(--fondo)]/85 px-6 py-3.5 backdrop-blur-md">
           <p className="text-sm text-texto-secundario">
-            {saludo()},{" "}
+            <Saludo />,{" "}
             <span className="font-medium text-texto-principal">
               {primerNombre(usuaria.nombre_completo)}
             </span>
@@ -42,11 +43,4 @@ export default async function PanelLayout({
 
 function primerNombre(nombre: string): string {
   return nombre.split(" ")[0] ?? nombre;
-}
-
-function saludo(): string {
-  const h = new Date().getHours();
-  if (h < 12) return "Buenos días";
-  if (h < 19) return "Buenas tardes";
-  return "Buenas noches";
 }

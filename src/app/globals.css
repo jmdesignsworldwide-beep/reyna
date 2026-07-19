@@ -23,19 +23,19 @@
 }
 
 .dark {
-  --fondo: #241a20;
-  --superficie: #2e222a;
-  --superficie-suave: #362630;
-  --tarjeta: #33232d;
-  --borde: rgba(232, 127, 166, 0.16);
-  --texto-principal: #f3e3ea;
-  --texto-secundario: #c9a7b6;
-  --rosa-principal: #e87fa6;
-  --rosa-medio: #d76e97;
-  --rosa-hover: #f3a0c0;
-  --aurora-1: rgba(177, 74, 115, 0.35);
-  --aurora-2: rgba(96, 40, 62, 0.55);
-  --aurora-3: rgba(36, 26, 32, 0.6);
+  --fondo: #1a1016;          /* Base vino casi negra */
+  --superficie: #3a2a38;     /* Tarjetas: claramente más claras que el fondo */
+  --superficie-suave: #453242;
+  --tarjeta: #453242;
+  --borde: rgba(244, 184, 210, 0.28); /* Borde visible para separar tarjetas */
+  --texto-principal: #fdf3f8; /* Casi blanco rosado — máximo contraste */
+  --texto-secundario: #e7d2de; /* Claro y legible (AA amplio) sobre superficie */
+  --rosa-principal: #f6b0cd;  /* Brillante para números, títulos y enlaces */
+  --rosa-medio: #f09bbb;
+  --rosa-hover: #ffc2dc;
+  --aurora-1: rgba(240, 160, 192, 0.16);
+  --aurora-2: rgba(70, 34, 52, 0.4);
+  --aurora-3: rgba(26, 16, 22, 0.6);
 }
 
 @layer base {
@@ -88,6 +88,17 @@
     box-shadow: 0 10px 32px -8px rgba(177, 74, 115, 0.28);
     transform: translateY(-2px);
     border-color: rgba(232, 127, 166, 0.35);
+  }
+
+  /* En oscuro la sombra rosa clara no se ve: usamos una sombra profunda +
+     borde visible para que las tarjetas se separen claramente del fondo. */
+  .dark .tarjeta {
+    box-shadow: 0 8px 28px -10px rgba(0, 0, 0, 0.6);
+    border-color: rgba(240, 170, 200, 0.2);
+  }
+  .dark .tarjeta-interactiva:hover {
+    box-shadow: 0 14px 36px -10px rgba(0, 0, 0, 0.7);
+    border-color: rgba(246, 182, 208, 0.45);
   }
 
   .texto-degradado {
