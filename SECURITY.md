@@ -212,6 +212,27 @@ es escribible ni alterable desde ningún cliente.
 - Ejecutar `supabase/verificacion_advisor.sql` y confirmar Security Advisor
   limpio (salvo HIBP en plan gratuito).
 
+## Verificación en vivo (re-auditoría de los 6 módulos)
+Ejecutado contra la base de datos de producción (resultados, no supuestos):
+- **RLS + FORCE:** 14/14 tablas de `public` con ambos activos; **0** tablas sin RLS.
+- **Funciones `SECURITY DEFINER`:** **0** sin `search_path` fijo. Los helpers
+  `is_admin`/`current_user_role`/`puede` viven en el esquema `private` (no
+  expuesto por PostgREST); `anon` no puede ejecutarlos.
+- **Inmutabilidad (pentest como `service_role`):** un intento de `UPDATE` y de
+  `DELETE` sobre una evaluación `firmada` → **ambos bloqueados** por el trigger
+  (`update_blocked=t delete_blocked=t`), incluso con la llave maestra. La prueba
+  corrió en una transacción revertida: **no** se persistió ningún dato ficticio.
+- **Aislamiento de recepción:** en `role_permissions`, recepción tiene `ver=false`
+  para `estudios`, `consultas`, `evaluaciones` y `finanzas`; las políticas RLS de
+  esas tablas exigen `private.puede(...)`, por lo que recepción obtiene 0 filas.
+- **Storage:** los 4 buckets (`estudios`, `evaluaciones`, `recibos`,
+  `comprobantes`) son privados (`public=false`).
+- **`audit_log`:** una sola política (`SELECT`, admin); sin `INSERT/UPDATE/DELETE`
+  → inalterable desde cualquier cliente.
+
+Único hallazgo residual del Advisor: **HIBP** (contraseñas filtradas), que
+requiere plan Pro de Supabase.
+
 ## Reporte de vulnerabilidades
 Contacto: **jm.nexus.designs@gmail.com**. Por favor reporta de forma responsable
 y privada; no abras un issue público con detalles explotables.
