@@ -257,6 +257,28 @@ export type Estudio = {
   created_at: string;
 };
 
+// ---------- Reportes médicos ----------
+export type TipoReporte =
+  | "resumen_consulta"
+  | "resultado_estudio"
+  | "reporte_general";
+
+export type Reporte = {
+  id: string;
+  paciente_id: string;
+  tipo: TipoReporte;
+  titulo: string;
+  fecha: string; // YYYY-MM-DD
+  consulta_id: string | null;
+  estudio_id: string | null;
+  contenido: Json;
+  resumen_texto: string | null;
+  pdf_path: string | null;
+  created_by: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
 // ---------- Agenda ----------
 export type TipoConsulta =
   | "primera_vez"
@@ -504,6 +526,16 @@ export interface Database {
         Update: Partial<Omit<Gasto, "id" | "created_at" | "updated_at">>;
         Relationships: [];
       };
+      reportes: {
+        Row: Reporte;
+        Insert: Partial<Omit<Reporte, "id" | "created_at" | "updated_at">> & {
+          paciente_id: string;
+          tipo: TipoReporte;
+          titulo: string;
+        };
+        Update: Partial<Omit<Reporte, "id" | "paciente_id" | "created_at" | "updated_at">>;
+        Relationships: [];
+      };
     };
     Views: { [_ in never]: never };
     Functions: {
@@ -529,6 +561,7 @@ export interface Database {
       riesgo_cv: RiesgoCV;
       metodo_pago: MetodoPago;
       tipo_pago: TipoPago;
+      tipo_reporte: TipoReporte;
     };
     CompositeTypes: { [_ in never]: never };
   };
