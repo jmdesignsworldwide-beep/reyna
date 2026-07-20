@@ -31,6 +31,7 @@ const MATRIZ: Record<UserRole, Record<string, Accion[]>> = {
     estudios: ["ver", "crear", "editar", "borrar"],
     consultas: ["ver", "crear", "editar", "borrar"],
     evaluaciones: ["ver", "crear", "editar", "borrar"],
+    reportes: ["ver", "crear", "editar", "borrar"],
     agenda: ["ver", "crear", "editar", "borrar"],
     pagos: ["ver", "crear", "editar", "borrar"],
     finanzas: ["ver", "crear", "editar", "borrar"],
@@ -52,6 +53,8 @@ const MATRIZ: Record<UserRole, Record<string, Accion[]>> = {
     consultas: ["ver", "crear", "editar"],
     // Prepara el borrador de la evaluación; la firma es solo del médico.
     evaluaciones: ["ver", "crear", "editar"],
+    // Puede generar y ver reportes del paciente; no editar ni borrar.
+    reportes: ["ver", "crear"],
     agenda: ["ver"],
     // Sin acceso financiero.
   },

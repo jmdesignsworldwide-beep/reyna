@@ -12,6 +12,7 @@ import {
 } from "@/components/panel/EstudiosHistorial";
 import { LineaTiempo } from "@/components/consultas/LineaTiempo";
 import { ListaEvaluaciones } from "@/components/evaluaciones/ListaEvaluaciones";
+import { ListaReportes, type ReporteVista } from "@/components/reportes/ListaReportes";
 import { PagosPaciente, type PagoVista } from "@/components/finanzas/PagosPaciente";
 import { calcularEdad, formatearFecha, formatearFechaHora } from "@/lib/formato";
 import {
@@ -23,7 +24,7 @@ import {
   factoresDeRiesgo,
   nivelRiesgo,
 } from "@/lib/cardio";
-import type { Paciente, Estudio, Consulta, Evaluacion } from "@/types/database";
+import type { Paciente, Estudio, Consulta, Evaluacion, Reporte } from "@/types/database";
 
 type EvaluacionResumen = Pick<
   Evaluacion,
@@ -108,6 +109,55 @@ export default async function FichaPacientePage({
       .eq("paciente_id", p.id)
       .order("fecha", { ascending: false });
     evaluaciones = (evalRaw as EvaluacionResumen[] | null) ?? [];
+  }
+
+  // Reportes médicos del paciente (recurso propio 'reportes').
+  const verReportes = puedeUI(usuaria.rol, "reportes", "ver");
+  let reportes: ReporteVista[] = [];
+  if (verReportes) {
+    const { data: repRaw } = await supabase
+      .from("reportes")
+      .select("id, tipo, titulo, fecha, created_at, pdf_path, resumen_texto, created_by")
+      .eq("paciente_id", p.id)
+      .order("created_at", { ascending: false });
+    const filas =
+      (repRaw as Pick<
+        Reporte,
+        "id" | "tipo" | "titulo" | "fecha" | "created_at" | "pdf_path" | "resumen_texto" | "created_by"
+      >[] | null) ?? [];
+    // Nombres de quién generó (best-effort; si RLS lo restringe, se omite).
+    const ids = [...new Set(filas.map((f) => f.created_by).filter(Boolean))] as string[];
+    const nombres = new Map<string, string>();
+    if (ids.length > 0) {
+      const { data: profs } = await supabase
+        .from("profiles")
+        .select("id, nombre_completo")
+        .in("id", ids);
+      for (const pr of (profs as { id: string; nombre_completo: string }[] | null) ?? []) {
+        nombres.set(pr.id, pr.nombre_completo);
+      }
+    }
+    reportes = await Promise.all(
+      filas.map(async (f) => {
+        let pdf_url: string | null = null;
+        if (f.pdf_path) {
+          const { data: firmada } = await supabase.storage
+            .from("reportes")
+            .createSignedUrl(f.pdf_path, 600);
+          pdf_url = firmada?.signedUrl ?? null;
+        }
+        return {
+          id: f.id,
+          tipo: f.tipo,
+          titulo: f.titulo,
+          fecha: f.fecha,
+          created_at: f.created_at,
+          pdf_url,
+          resumen_texto: f.resumen_texto,
+          generadoPor: f.created_by ? nombres.get(f.created_by) ?? null : null,
+        };
+      }),
+    );
   }
 
   // Pagos del paciente (recurso 'pagos'; recepción y admin).
@@ -419,6 +469,16 @@ export default async function FichaPacientePage({
           pacienteId={p.id}
           evaluaciones={evaluaciones}
           puedeCrear={puedeUI(usuaria.rol, "evaluaciones", "crear")}
+        />
+      )}
+
+      {verReportes && (
+        <ListaReportes
+          pacienteId={p.id}
+          telefono={p.telefono}
+          reportes={reportes}
+          puedeCrear={puedeUI(usuaria.rol, "reportes", "crear")}
+          puedeBorrar={puedeUI(usuaria.rol, "reportes", "borrar")}
         />
       )}
 
