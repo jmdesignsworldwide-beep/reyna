@@ -1,5 +1,6 @@
 "use client";
 import { EstadoVacio } from "@/components/ui/EstadoVacio";
+import { BotonEliminar } from "@/components/global/BotonEliminar";
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
@@ -39,7 +40,6 @@ export function EstudiosHistorial({
   const [abrir, setAbrir] = useState(false);
   const [cargando, setCargando] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [ocupadoId, setOcupadoId] = useState<string | null>(null);
 
   async function registrar(formData: FormData) {
     setError(null);
@@ -51,18 +51,6 @@ export function EstudiosHistorial({
       return;
     }
     setAbrir(false);
-    router.refresh();
-  }
-
-  async function borrar(id: string) {
-    if (!window.confirm("¿Eliminar este estudio y su archivo? No se puede deshacer.")) return;
-    setOcupadoId(id);
-    const res = await eliminarEstudio(id, pacienteId);
-    setOcupadoId(null);
-    if (!res.ok) {
-      window.alert(res.error ?? "No se pudo eliminar.");
-      return;
-    }
     router.refresh();
   }
 
@@ -172,14 +160,7 @@ export function EstudiosHistorial({
                     </a>
                   )}
                   {puedeBorrar && (
-                    <button
-                      type="button"
-                      onClick={() => borrar(e.id)}
-                      disabled={ocupadoId === e.id}
-                      className="rounded-suave border border-[var(--borde)] px-3 py-1.5 text-xs text-texto-secundario transition-colors hover:border-estado-urgente hover:text-estado-urgente disabled:opacity-60"
-                    >
-                      Eliminar
-                    </button>
+                    <BotonEliminar onEliminar={() => eliminarEstudio(e.id, pacienteId)} />
                   )}
                 </div>
               </div>
