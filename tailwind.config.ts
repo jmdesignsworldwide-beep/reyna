@@ -14,17 +14,20 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
+        // Colores de marca ligados a las variables CSS de tema para que
+        // TODAS las utilidades (text-*, bg-*, border-*) cambien en modo oscuro.
+        // (Antes eran hex fijos del modo claro → el texto no cambiaba en oscuro.)
         rosa: {
-          principal: "#B14A73",
-          medio: "#C25A82",
-          hover: "#E87FA6",
+          principal: "var(--rosa-principal)",
+          medio: "var(--rosa-medio)",
+          hover: "var(--rosa-hover)",
           pastel: "#FBE4EC",
           claro: "#FDEEF3",
         },
         crema: "#FFFAF7",
         texto: {
-          principal: "#5A4A52",
-          secundario: "#8A6B78",
+          principal: "var(--texto-principal)",
+          secundario: "var(--texto-secundario)",
         },
         estado: {
           exito: "#4CAF82",
