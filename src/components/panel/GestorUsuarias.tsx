@@ -106,7 +106,7 @@ export function GestorUsuarias({
         />
       )}
 
-      <Card className="overflow-hidden !p-0">
+      <Card className="hidden overflow-hidden !p-0 md:block">
         <div className="overflow-x-auto">
           <table className="w-full min-w-[720px] text-left text-sm">
             <thead>
@@ -231,6 +231,98 @@ export function GestorUsuarias({
           </table>
         </div>
       </Card>
+
+      {/* Móvil: tarjetas apiladas con los mismos controles */}
+      <div className="space-y-3 md:hidden">
+        {inicial.map((u) => {
+          const ocupada = ocupadaId === u.id;
+          const protegida = esUltimoAdmin(u);
+          return (
+            <Card key={u.id} className="!p-4">
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <p className="font-medium text-texto-principal">
+                    {u.nombre_completo}
+                    {u.id === actualId && <span className="ml-2 text-xs text-rosa-medio">(tú)</span>}
+                  </p>
+                  <p className="truncate text-sm text-texto-secundario">{u.correo}</p>
+                  {u.cedula && <p className="text-xs text-texto-secundario">Cédula: {u.cedula}</p>}
+                </div>
+                <span
+                  className="inline-flex flex-none items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium"
+                  style={{
+                    backgroundColor: u.activo ? "#4CAF8218" : "#8A6B7818",
+                    color: u.activo ? "#4CAF82" : "#8A6B78",
+                  }}
+                >
+                  <span className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: u.activo ? "#4CAF82" : "#8A6B78" }} />
+                  {u.activo ? "Activa" : "Inactiva"}
+                </span>
+              </div>
+
+              <div className="mt-3">
+                <label className="mb-1 block text-xs uppercase tracking-wide text-texto-secundario">Rol</label>
+                <select
+                  value={u.rol}
+                  disabled={ocupada || protegida}
+                  onChange={(e) => cambiarRol(u, e.target.value as UserRole)}
+                  className="campo !py-1.5 !text-sm disabled:opacity-60"
+                  title={protegida ? "No se puede cambiar al último administrador activo" : undefined}
+                >
+                  {ROLES.map((r) => (
+                    <option key={r} value={r}>
+                      {ETIQUETAS_ROL[r]}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
+                <span className="text-xs text-texto-secundario">Alta: {formatearFecha(u.created_at)}</span>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => alternarActivo(u)}
+                    disabled={ocupada || protegida}
+                    className="rounded-suave border border-[var(--borde)] px-2.5 py-1.5 text-xs text-texto-secundario transition-colors hover:text-rosa-principal disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    {u.activo ? "Desactivar" : "Activar"}
+                  </button>
+                  {confirmarId === u.id ? (
+                    <span className="inline-flex items-center gap-1.5">
+                      <button
+                        type="button"
+                        onClick={() => eliminar(u)}
+                        disabled={ocupada}
+                        className="rounded-suave px-2.5 py-1.5 text-xs font-medium text-white transition-transform active:scale-[0.98] disabled:opacity-60"
+                        style={{ background: "#E0567A" }}
+                      >
+                        {ocupada ? "…" : "Confirmar"}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setConfirmarId(null)}
+                        className="rounded-suave border border-[var(--borde)] px-2.5 py-1.5 text-xs text-texto-secundario"
+                      >
+                        Cancelar
+                      </button>
+                    </span>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => setConfirmarId(u.id)}
+                      disabled={ocupada || protegida || u.id === actualId}
+                      className="rounded-suave border border-[var(--borde)] px-2.5 py-1.5 text-xs text-texto-secundario transition-colors active:scale-[0.98] hover:border-estado-urgente hover:text-estado-urgente disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                      Eliminar
+                    </button>
+                  )}
+                </div>
+              </div>
+            </Card>
+          );
+        })}
+      </div>
     </div>
   );
 }

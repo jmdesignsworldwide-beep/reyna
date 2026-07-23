@@ -65,45 +65,62 @@ export default async function AuditoriaPage() {
         </p>
       </header>
 
-      <Card className="overflow-hidden !p-0">
-        {lista.length === 0 ? (
+      {lista.length === 0 ? (
+        <Card>
           <EstadoVacio texto="Aún no hay eventos en la bitácora. Cada acción sensible del sistema quedará registrada aquí." />
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full min-w-[640px] text-left text-sm">
-              <thead>
-                <tr className="border-b border-[var(--borde)] text-xs uppercase tracking-wide text-texto-secundario">
-                  <th className="px-5 py-3.5 font-medium">Acción</th>
-                  <th className="px-5 py-3.5 font-medium">Usuaria</th>
-                  <th className="px-5 py-3.5 font-medium">Fecha y hora</th>
-                  <th className="px-5 py-3.5 font-medium">IP</th>
-                </tr>
-              </thead>
-              <tbody>
-                {lista.map((e) => (
-                  <tr
-                    key={e.id}
-                    className="border-b border-[var(--borde)] last:border-0 hover:bg-[var(--superficie-suave)]"
-                  >
-                    <td className="px-5 py-3.5 font-medium text-texto-principal">
-                      {ETIQUETA_ACCION[e.accion] ?? e.accion}
-                    </td>
-                    <td className="px-5 py-3.5 text-texto-secundario">
-                      {e.actor_email ?? "sistema"}
-                    </td>
-                    <td className="px-5 py-3.5 text-texto-secundario">
-                      {formatearFechaHora(e.created_at)}
-                    </td>
-                    <td className="px-5 py-3.5 text-texto-secundario">
-                      {e.ip ?? "—"}
-                    </td>
+        </Card>
+      ) : (
+        <>
+          {/* Escritorio: tabla */}
+          <Card className="hidden overflow-hidden !p-0 md:block">
+            <div className="overflow-x-auto">
+              <table className="w-full min-w-[640px] text-left text-sm">
+                <thead>
+                  <tr className="border-b border-[var(--borde)] text-xs uppercase tracking-wide text-texto-secundario">
+                    <th className="px-5 py-3.5 font-medium">Acción</th>
+                    <th className="px-5 py-3.5 font-medium">Usuaria</th>
+                    <th className="px-5 py-3.5 font-medium">Fecha y hora</th>
+                    <th className="px-5 py-3.5 font-medium">IP</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {lista.map((e) => (
+                    <tr
+                      key={e.id}
+                      className="border-b border-[var(--borde)] last:border-0 hover:bg-[var(--superficie-suave)]"
+                    >
+                      <td className="px-5 py-3.5 font-medium text-texto-principal">
+                        {ETIQUETA_ACCION[e.accion] ?? e.accion}
+                      </td>
+                      <td className="px-5 py-3.5 text-texto-secundario">{e.actor_email ?? "sistema"}</td>
+                      <td className="px-5 py-3.5 text-texto-secundario">
+                        {formatearFechaHora(e.created_at)}
+                      </td>
+                      <td className="px-5 py-3.5 text-texto-secundario">{e.ip ?? "—"}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </Card>
+
+          {/* Móvil: tarjetas apiladas */}
+          <div className="space-y-3 md:hidden">
+            {lista.map((e) => (
+              <Card key={e.id} className="!p-4">
+                <p className="font-medium text-texto-principal">
+                  {ETIQUETA_ACCION[e.accion] ?? e.accion}
+                </p>
+                <p className="mt-0.5 text-sm text-texto-secundario">{e.actor_email ?? "sistema"}</p>
+                <div className="mt-2 flex flex-wrap items-center justify-between gap-2 text-xs text-texto-secundario">
+                  <span>{formatearFechaHora(e.created_at)}</span>
+                  <span>IP {e.ip ?? "—"}</span>
+                </div>
+              </Card>
+            ))}
           </div>
-        )}
-      </Card>
+        </>
+      )}
     </div>
   );
 }
