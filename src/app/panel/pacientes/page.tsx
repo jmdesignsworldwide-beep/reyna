@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { EstadoVacio } from "@/components/ui/EstadoVacio";
 import Link from "next/link";
 import { requerirUsuaria } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
@@ -79,11 +80,14 @@ export default async function PacientesPage({
 
       {lista.length === 0 ? (
         <Card>
-          <p className="text-sm text-texto-secundario">
-            {q
-              ? "No se encontraron pacientes con ese criterio."
-              : "Aún no hay pacientes registrados."}
-          </p>
+          <EstadoVacio
+            titulo={q ? "Sin resultados" : "Aún no hay pacientes"}
+            texto={
+              q
+                ? "No se encontraron pacientes con ese criterio. Prueba con otro nombre o cédula."
+                : "Registra tu primer paciente para empezar a construir su historia clínica."
+            }
+          />
         </Card>
       ) : (
         <Card className="overflow-hidden !p-0">

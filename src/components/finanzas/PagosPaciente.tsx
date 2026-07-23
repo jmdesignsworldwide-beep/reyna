@@ -1,4 +1,5 @@
 "use client";
+import { EstadoVacio } from "@/components/ui/EstadoVacio";
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
@@ -99,7 +100,7 @@ export function PagosPaciente({
       </div>
 
       {pagos.length === 0 ? (
-        <p className="text-sm text-texto-secundario">Aún no hay pagos registrados para este paciente.</p>
+        <EstadoVacio compacto texto="Aún no hay pagos registrados para este paciente. Registra el primero y genera su recibo." />
       ) : (
         <ul className="space-y-2.5">
           {pagos.map((p) => (

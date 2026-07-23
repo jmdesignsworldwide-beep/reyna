@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { EstadoVacio } from "@/components/ui/EstadoVacio";
 import { requerirRol } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { Card } from "@/components/ui/Card";
@@ -66,9 +67,7 @@ export default async function AuditoriaPage() {
 
       <Card className="overflow-hidden !p-0">
         {lista.length === 0 ? (
-          <p className="p-6 text-sm text-texto-secundario">
-            Aún no hay eventos registrados.
-          </p>
+          <EstadoVacio texto="Aún no hay eventos en la bitácora. Cada acción sensible del sistema quedará registrada aquí." />
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full min-w-[640px] text-left text-sm">

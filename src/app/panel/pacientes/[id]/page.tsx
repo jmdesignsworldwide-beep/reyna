@@ -454,7 +454,7 @@ export default async function FichaPacientePage({
       <div className="grid gap-6 lg:grid-cols-2">
         <Card>
           <h2 className="mb-4 font-display text-lg font-semibold text-texto-principal">Datos personales</h2>
-          <dl className="grid grid-cols-2 gap-4">
+          <dl className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <Dato etiqueta="Nombres" valor={p.nombres} />
             <Dato etiqueta="Apellidos" valor={p.apellidos} />
             <Dato etiqueta="Cédula" valor={p.cedula} />
@@ -468,7 +468,7 @@ export default async function FichaPacientePage({
 
         <Card>
           <h2 className="mb-4 font-display text-lg font-semibold text-texto-principal">Contacto</h2>
-          <dl className="grid grid-cols-2 gap-4">
+          <dl className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <Dato etiqueta="Teléfono" valor={p.telefono} />
             <Dato etiqueta="Teléfono secundario" valor={p.telefono_secundario} />
             <Dato etiqueta="Correo" valor={p.correo} />
@@ -481,7 +481,7 @@ export default async function FichaPacientePage({
 
         <Card>
           <h2 className="mb-4 font-display text-lg font-semibold text-texto-principal">Seguro médico</h2>
-          <dl className="grid grid-cols-2 gap-4">
+          <dl className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <Dato etiqueta="ARS" valor={p.ars} />
             <Dato etiqueta="Número de afiliado" valor={p.numero_afiliado} />
             <Dato etiqueta="Tipo de plan" valor={p.tipo_plan} />
@@ -490,7 +490,7 @@ export default async function FichaPacientePage({
 
         <Card>
           <h2 className="mb-4 font-display text-lg font-semibold text-texto-principal">Contacto de emergencia</h2>
-          <dl className="grid grid-cols-2 gap-4">
+          <dl className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <Dato etiqueta="Nombre" valor={p.contacto_emergencia_nombre} />
             <Dato etiqueta="Parentesco" valor={p.contacto_emergencia_parentesco} />
             <Dato etiqueta="Teléfono" valor={p.contacto_emergencia_telefono} />
@@ -499,7 +499,7 @@ export default async function FichaPacientePage({
 
         <Card>
           <h2 className="mb-4 font-display text-lg font-semibold text-texto-principal">Antropometría</h2>
-          <dl className="grid grid-cols-2 gap-4">
+          <dl className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <Dato etiqueta="Peso" valor={p.peso !== null ? `${p.peso} kg` : null} />
             <Dato etiqueta="Talla" valor={p.talla !== null ? `${p.talla} cm` : null} />
             <div>
@@ -525,7 +525,7 @@ export default async function FichaPacientePage({
 
         <Card>
           <h2 className="mb-4 font-display text-lg font-semibold text-texto-principal">Factores de riesgo</h2>
-          <dl className="grid grid-cols-2 gap-4">
+          <dl className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <Dato etiqueta="Hipertensión" valor={p.rf_hipertension ? `Sí${p.rf_hipertension_desde ? ` (desde ${p.rf_hipertension_desde})` : ""}` : "No"} />
             <Dato etiqueta="Diabetes" valor={p.rf_diabetes !== "no" ? `${ETIQUETA_DIABETES[p.rf_diabetes]}${p.rf_diabetes_desde ? ` (desde ${p.rf_diabetes_desde})` : ""}` : "No"} />
             <Dato etiqueta="Dislipidemia" valor={p.rf_dislipidemia ? "Sí" : "No"} />

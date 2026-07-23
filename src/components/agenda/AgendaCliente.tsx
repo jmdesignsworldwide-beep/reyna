@@ -435,14 +435,16 @@ function VistaMes({
   const semanas = diasDeMes(ancla);
   return (
     <div className="tarjeta overflow-hidden !p-0">
-      <div className="grid grid-cols-7 border-b border-[var(--borde)] bg-[var(--superficie-suave)]">
+      {/* En móvil el mes se desplaza horizontalmente en vez de apretarse. */}
+      <div className="overflow-x-auto">
+      <div className="grid min-w-[720px] grid-cols-7 border-b border-[var(--borde)] bg-[var(--superficie-suave)] md:min-w-0">
         {DIAS_CORTOS.map((d) => (
           <div key={d} className="px-2 py-2 text-center text-xs font-medium text-texto-secundario">
             {d}
           </div>
         ))}
       </div>
-      <div className="grid grid-cols-7">
+      <div className="grid min-w-[720px] grid-cols-7 md:min-w-0">
         {semanas.flat().map((d) => {
           const delMes = d.getMonth() === ancla.getMonth();
           const delDia = citas
@@ -495,6 +497,7 @@ function VistaMes({
             </div>
           );
         })}
+      </div>
       </div>
     </div>
   );

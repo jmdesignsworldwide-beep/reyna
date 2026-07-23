@@ -1,4 +1,5 @@
 "use client";
+import { EstadoVacio } from "@/components/ui/EstadoVacio";
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
@@ -141,7 +142,7 @@ export function GestorGastos({
 
       {gastos.length === 0 ? (
         <Card>
-          <p className="text-sm text-texto-secundario">Aún no hay gastos registrados.</p>
+          <EstadoVacio compacto texto="Aún no hay gastos registrados en el consultorio. Anota el primero para llevar el control." />
         </Card>
       ) : (
         <Card className="overflow-hidden !p-0">

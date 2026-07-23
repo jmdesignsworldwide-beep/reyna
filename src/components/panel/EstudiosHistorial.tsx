@@ -1,4 +1,5 @@
 "use client";
+import { EstadoVacio } from "@/components/ui/EstadoVacio";
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
@@ -138,9 +139,10 @@ export function EstudiosHistorial({
       )}
 
       {estudios.length === 0 ? (
-        <p className="text-sm text-texto-secundario">
-          Aún no hay estudios registrados para este paciente.
-        </p>
+        <EstadoVacio
+          compacto
+          texto="Aún no hay estudios para este paciente. Carga el primer eco, ECG o Holter para verlo aquí."
+        />
       ) : (
         <ol className="space-y-3">
           {estudios.map((e) => (
