@@ -6,6 +6,8 @@ import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { Card } from "@/components/ui/Card";
 import { HeartMark } from "@/components/ui/HeartMark";
+import { EstadoVacio } from "@/components/ui/EstadoVacio";
+import { LinkPrimario } from "@/components/ui/LinkPrimario";
 import { GraficaEvolucion, type PuntoMes } from "@/components/finanzas/GraficaEvolucion";
 import { formatearRD, type Crecimiento } from "@/lib/finanzas";
 import { formatearFecha } from "@/lib/formato";
@@ -261,7 +263,7 @@ export function PanelFinanzas({
             {haySerie ? (
               <GraficaEvolucion datos={serieMensual} />
             ) : (
-              <EstadoVacio texto="Aquí verás la tendencia de tu negocio a medida que registres pagos y gastos." />
+              <EstadoVacio compacto texto="Aquí verás la tendencia de tu negocio a medida que registres pagos y gastos." />
             )}
             {proyeccion && (
               <div className="mt-4 flex flex-wrap items-center gap-x-2 gap-y-1 rounded-suave border border-[var(--borde)] bg-[var(--superficie-suave)] p-3.5 text-sm">
@@ -324,7 +326,7 @@ export function PanelFinanzas({
             <Card className="lg:col-span-1">
               <h2 className="mb-4 font-display text-lg font-semibold text-texto-principal">Alertas inteligentes</h2>
               {alertas.length === 0 ? (
-                <EstadoVacio texto="Todo en orden. Las alertas aparecerán cuando haya algo que destacar." />
+                <EstadoVacio compacto texto="Todo en orden. Las alertas aparecerán cuando haya algo que destacar." />
               ) : (
                 <ul className="space-y-3">
                   {alertas.map((a, i) => {
@@ -373,7 +375,7 @@ function Cambio({ c, invertido }: { c: Crecimiento; invertido?: boolean }) {
 }
 
 function Distribucion({ grupos, vacio }: { grupos: Grupo[]; vacio: string }) {
-  if (grupos.length === 0) return <EstadoVacio texto={vacio} />;
+  if (grupos.length === 0) return <EstadoVacio compacto texto={vacio} />;
   const max = Math.max(...grupos.map((g) => g.total), 1);
   return (
     <ul className="space-y-3">
@@ -415,51 +417,24 @@ function Mini({ titulo, valor, detalle, color }: { titulo: string; valor: string
   );
 }
 
-function EstadoVacio({ texto }: { texto: string }) {
-  return (
-    <div className="flex flex-col items-center gap-2 py-8 text-center">
-      <HeartMark className="h-7 w-7 opacity-50" />
-      <p className="max-w-xs text-sm text-texto-secundario">{texto}</p>
-    </div>
-  );
-}
-
 function EstadoVacioHero() {
   return (
-    <motion.div initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
-      <Card className="relative overflow-hidden !p-10">
-        <div
-          aria-hidden
-          className="pointer-events-none absolute -right-16 -top-16 h-56 w-56 rounded-full blur-3xl"
-          style={{ background: "var(--aurora-1)" }}
-        />
-        <div className="relative flex flex-col items-center gap-4 text-center">
-          <span className="flex h-16 w-16 items-center justify-center rounded-full bg-[var(--tarjeta)]">
-            <HeartMark className="h-8 w-8 animate-heart-pulse" />
-          </span>
-          <h2 className="font-display text-2xl font-semibold text-texto-principal">
-            Aún no hay movimientos en este período
-          </h2>
-          <p className="max-w-md text-texto-secundario">
-            Registra el primer pago desde la ficha de un paciente o anota un gasto del consultorio.
-            En cuanto tengas datos, aquí verás tu resumen ejecutivo, tendencias y análisis del negocio.
-          </p>
-          <div className="mt-1 flex flex-wrap justify-center gap-2">
-            <Link
-              href="/panel/pacientes"
-              className="rounded-suave bg-[linear-gradient(120deg,var(--rosa-principal),var(--rosa-medio))] px-4 py-2.5 text-sm font-medium text-white shadow-tarjeta transition-all hover:shadow-tarjeta-hover hover:brightness-105"
-            >
-              Registrar un pago
-            </Link>
+    <Card className="!p-0">
+      <EstadoVacio
+        titulo="Aún no hay movimientos en este período"
+        texto="Registra el primer pago desde la ficha de un paciente o anota un gasto del consultorio. En cuanto tengas datos, aquí verás tu resumen ejecutivo, tendencias y análisis del negocio."
+        accion={
+          <>
+            <LinkPrimario href="/panel/pacientes">Registrar un pago</LinkPrimario>
             <Link
               href="/panel/finanzas/gastos"
-              className="rounded-suave border border-[var(--borde)] px-4 py-2.5 text-sm font-medium text-rosa-principal transition-colors hover:border-rosa-hover"
+              className="rounded-suave border border-[var(--borde)] px-5 py-2.5 text-sm font-medium text-rosa-principal transition-colors hover:border-rosa-hover"
             >
               Anotar un gasto
             </Link>
-          </div>
-        </div>
-      </Card>
-    </motion.div>
+          </>
+        }
+      />
+    </Card>
   );
 }

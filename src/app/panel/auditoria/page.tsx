@@ -66,8 +66,11 @@ export default async function AuditoriaPage() {
       </header>
 
       {lista.length === 0 ? (
-        <Card>
-          <EstadoVacio texto="Aún no hay eventos en la bitácora. Cada acción sensible del sistema quedará registrada aquí." />
+        <Card className="!p-0">
+          <EstadoVacio
+            titulo="Bitácora vacía"
+            texto="Aún no hay eventos registrados. Cada acción sensible del sistema —crear, editar, eliminar, firmar— quedará registrada aquí de forma automática."
+          />
         </Card>
       ) : (
         <>

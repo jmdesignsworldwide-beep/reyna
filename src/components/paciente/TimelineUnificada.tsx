@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { HeartMark } from "@/components/ui/HeartMark";
+import { EstadoVacio } from "@/components/ui/EstadoVacio";
 import { Icono } from "@/components/panel/iconos";
 import { formatearFecha } from "@/lib/formato";
 import {
@@ -37,15 +37,11 @@ export function TimelineUnificada({ eventos }: { eventos: EventoHistorial[] }) {
 
   if (eventos.length === 0) {
     return (
-      <div className="flex flex-col items-center gap-3 py-12 text-center">
-        <span className="flex h-14 w-14 items-center justify-center rounded-full bg-[var(--tarjeta)]">
-          <HeartMark className="h-7 w-7" pulse />
-        </span>
-        <p className="max-w-sm text-sm text-texto-secundario">
-          Aún no hay eventos clínicos. A medida que registres consultas, estudios, evaluaciones y
-          reportes, aparecerán aquí en orden cronológico.
-        </p>
-      </div>
+      <EstadoVacio
+        compacto
+        titulo="Historial en blanco"
+        texto="A medida que registres consultas, estudios, evaluaciones y reportes, aparecerán aquí en orden cronológico."
+      />
     );
   }
 

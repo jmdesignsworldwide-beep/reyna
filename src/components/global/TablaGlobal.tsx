@@ -4,6 +4,7 @@ import { useMemo, useState, type ReactNode } from "react";
 import Link from "next/link";
 import { Card } from "@/components/ui/Card";
 import { HeartMark } from "@/components/ui/HeartMark";
+import { EstadoVacio } from "@/components/ui/EstadoVacio";
 import { enRango, normaliza } from "@/lib/filtros";
 
 export interface FilaGlobal {
@@ -34,6 +35,8 @@ export function TablaGlobal({
   hrefDe,
   accionesDe,
   vacioTexto,
+  vacioTitulo,
+  vacioAccion,
 }: {
   eyebrow: string;
   titulo: string;
@@ -44,6 +47,8 @@ export function TablaGlobal({
   hrefDe?: (f: FilaGlobal) => string | null;
   accionesDe?: (f: FilaGlobal) => ReactNode;
   vacioTexto: string;
+  vacioTitulo?: string;
+  vacioAccion?: ReactNode;
 }) {
   const [q, setQ] = useState("");
   const [desde, setDesde] = useState("");
@@ -138,15 +143,16 @@ export function TablaGlobal({
       </div>
 
       {n === 0 ? (
-        <Card>
-          <div className="flex flex-col items-center gap-3 py-12 text-center">
-            <span className="flex h-14 w-14 items-center justify-center rounded-full bg-[var(--tarjeta)]">
-              <HeartMark className="h-7 w-7" pulse />
-            </span>
-            <p className="max-w-sm text-sm text-texto-secundario">
-              {conFiltro ? "Ningún resultado con esos filtros." : vacioTexto}
-            </p>
-          </div>
+        <Card className="!p-0">
+          <EstadoVacio
+            titulo={conFiltro ? "Sin resultados" : vacioTitulo ?? "Aún no hay registros"}
+            texto={
+              conFiltro
+                ? "Ningún registro coincide con esos filtros. Ajusta la búsqueda o el período."
+                : vacioTexto
+            }
+            accion={conFiltro ? undefined : vacioAccion}
+          />
         </Card>
       ) : (
         <>

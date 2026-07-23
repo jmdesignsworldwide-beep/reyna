@@ -1,6 +1,7 @@
 "use client";
 
 import { TablaGlobal, type FilaGlobal } from "@/components/global/TablaGlobal";
+import { LinkPrimario } from "@/components/ui/LinkPrimario";
 import { BotonEliminar } from "@/components/global/BotonEliminar";
 import { eliminarEvaluacion } from "@/app/panel/evaluaciones/acciones";
 import { ETIQUETA_ESTADO_EVALUACION, riesgoCV } from "@/lib/evaluaciones";
@@ -25,7 +26,9 @@ export function EvaluacionesGlobal({
       titulo="Evaluaciones"
       filas={filas}
       sustantivo={["evaluación", "evaluaciones"]}
-      vacioTexto="Aún no hay evaluaciones formales. Se crean desde la ficha de cada paciente."
+      vacioTitulo="Aún no hay evaluaciones"
+      vacioTexto="Las evaluaciones cardiológicas formales se crean desde la ficha del paciente. Ve a un paciente para crear su primera evaluación y firmarla."
+      vacioAccion={<LinkPrimario href="/panel/pacientes">Ir a un paciente →</LinkPrimario>}
       filtroTipo={{
         etiqueta: "Estado",
         opciones: [

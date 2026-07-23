@@ -1,6 +1,7 @@
 "use client";
 
 import { TablaGlobal, type FilaGlobal } from "@/components/global/TablaGlobal";
+import { LinkPrimario } from "@/components/ui/LinkPrimario";
 import { BotonEliminar } from "@/components/global/BotonEliminar";
 import { eliminarEstudio } from "@/app/panel/pacientes/acciones";
 import { ETIQUETA_TIPO_ESTUDIO } from "@/lib/cardio";
@@ -26,7 +27,9 @@ export function EstudiosGlobal({
       titulo="Estudios"
       filas={filas}
       sustantivo={["estudio", "estudios"]}
-      vacioTexto="Aún no hay estudios registrados. Se cargan desde la ficha de cada paciente."
+      vacioTitulo="Aún no hay estudios"
+      vacioTexto="Los estudios (eco, ECG, Holter, prueba de esfuerzo) se cargan desde la ficha del paciente. Abre un paciente para registrar el primero."
+      vacioAccion={<LinkPrimario href="/panel/pacientes">Ir a Pacientes →</LinkPrimario>}
       filtroTipo={{
         etiqueta: "Tipo",
         opciones: Object.entries(ETIQUETA_TIPO_ESTUDIO).map(([valor, texto]) => ({ valor, texto })),

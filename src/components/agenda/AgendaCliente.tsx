@@ -6,6 +6,7 @@ import Link from "next/link";
 import { Modal } from "@/components/ui/Modal";
 import { Button } from "@/components/ui/Button";
 import { HeartMark } from "@/components/ui/HeartMark";
+import { EstadoVacio } from "@/components/ui/EstadoVacio";
 import { FormularioCita } from "@/components/agenda/FormularioCita";
 import { cambiarEstadoCita, eliminarCita } from "@/app/panel/agenda/acciones";
 import {
@@ -304,15 +305,21 @@ function EstadoPildora({ estado }: { estado: EstadoCita }) {
 
 function VacioDia({ onNueva }: { onNueva?: () => void }) {
   return (
-    <div className="flex flex-col items-center gap-2 py-12 text-center">
-      <HeartMark className="h-8 w-8 opacity-70" />
-      <p className="text-sm text-texto-secundario">No hay citas para este día.</p>
-      {onNueva && (
-        <button onClick={onNueva} className="text-sm text-rosa-principal hover:text-rosa-hover">
-          Agendar una cita →
-        </button>
-      )}
-    </div>
+    <EstadoVacio
+      compacto
+      titulo="Día libre"
+      texto="No hay citas agendadas para este día."
+      accion={
+        onNueva ? (
+          <button
+            onClick={onNueva}
+            className="inline-flex items-center gap-1.5 rounded-suave bg-[linear-gradient(120deg,var(--rosa-principal),var(--rosa-medio))] px-5 py-2.5 text-sm font-medium text-white shadow-tarjeta transition-all active:scale-[0.98] hover:shadow-tarjeta-hover hover:brightness-105"
+          >
+            ＋ Agendar cita
+          </button>
+        ) : undefined
+      }
+    />
   );
 }
 
@@ -517,11 +524,12 @@ function VistaProximas({ citas, onSelect }: { citas: CitaConRel[]; onSelect: (c:
 
   if (grupos.length === 0) {
     return (
-      <div className="tarjeta">
-        <div className="flex flex-col items-center gap-2 py-12 text-center">
-          <HeartMark className="h-8 w-8 opacity-70" />
-          <p className="text-sm text-texto-secundario">No hay próximas citas.</p>
-        </div>
+      <div className="tarjeta !p-0">
+        <EstadoVacio
+          compacto
+          titulo="Sin próximas citas"
+          texto="Cuando agendes citas futuras, aparecerán aquí ordenadas por fecha."
+        />
       </div>
     );
   }
