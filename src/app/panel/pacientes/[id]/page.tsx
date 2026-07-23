@@ -14,6 +14,9 @@ import { LineaTiempo } from "@/components/consultas/LineaTiempo";
 import { ListaEvaluaciones } from "@/components/evaluaciones/ListaEvaluaciones";
 import { ListaReportes, type ReporteVista } from "@/components/reportes/ListaReportes";
 import { PagosPaciente, type PagoVista } from "@/components/finanzas/PagosPaciente";
+import { HistorialPaciente, type PanelHistorial } from "@/components/paciente/HistorialPaciente";
+import { TimelineUnificada } from "@/components/paciente/TimelineUnificada";
+import { construirHistorial } from "@/lib/historial";
 import { calcularEdad, formatearFecha, formatearFechaHora } from "@/lib/formato";
 import {
   ETIQUETA_SEXO,
@@ -211,6 +214,112 @@ export default async function FichaPacientePage({
   const claseImc = clasificacionIMC(p.imc);
   const tieneAlergias = (p.alergias ?? "").trim() !== "";
   const reevaluacionPendiente = clinico && p.activo && factores.length >= 3 && (citasFuturas ?? 0) === 0;
+
+  // Línea de tiempo clínica unificada (consultas + estudios + evaluaciones + reportes).
+  const eventos = construirHistorial({
+    pacienteId: p.id,
+    consultas,
+    estudios,
+    evaluaciones,
+    reportes,
+  });
+  const mostrarResumen = verConsultas || clinico || verEvaluaciones || verReportes;
+
+  const panelesHistorial: PanelHistorial[] = [
+    ...(mostrarResumen
+      ? [
+          {
+            clave: "resumen",
+            etiqueta: "Resumen",
+            contenido: (
+              <Card>
+                <TimelineUnificada eventos={eventos} />
+              </Card>
+            ),
+          },
+        ]
+      : []),
+    ...(verConsultas
+      ? [
+          {
+            clave: "consultas",
+            etiqueta: "Consultas",
+            contenido: (
+              <LineaTiempo
+                pacienteId={p.id}
+                consultas={consultas}
+                puedeCrear={puedeUI(usuaria.rol, "consultas", "crear")}
+              />
+            ),
+          },
+        ]
+      : []),
+    ...(clinico
+      ? [
+          {
+            clave: "estudios",
+            etiqueta: "Estudios",
+            contenido: (
+              <EstudiosHistorial
+                pacienteId={p.id}
+                estudios={estudios}
+                puedeCrear={puedeUI(usuaria.rol, "estudios", "crear")}
+                puedeBorrar={puedeUI(usuaria.rol, "estudios", "borrar")}
+              />
+            ),
+          },
+        ]
+      : []),
+    ...(verEvaluaciones
+      ? [
+          {
+            clave: "evaluaciones",
+            etiqueta: "Evaluaciones",
+            contenido: (
+              <ListaEvaluaciones
+                pacienteId={p.id}
+                evaluaciones={evaluaciones}
+                puedeCrear={puedeUI(usuaria.rol, "evaluaciones", "crear")}
+              />
+            ),
+          },
+        ]
+      : []),
+    ...(verReportes
+      ? [
+          {
+            clave: "reportes",
+            etiqueta: "Reportes",
+            contenido: (
+              <ListaReportes
+                pacienteId={p.id}
+                telefono={p.telefono}
+                reportes={reportes}
+                puedeCrear={puedeUI(usuaria.rol, "reportes", "crear")}
+                puedeBorrar={puedeUI(usuaria.rol, "reportes", "borrar")}
+              />
+            ),
+          },
+        ]
+      : []),
+    ...(verPagos
+      ? [
+          {
+            clave: "pagos",
+            etiqueta: "Pagos",
+            contenido: (
+              <PagosPaciente
+                pacienteId={p.id}
+                pacienteNombre={`${p.nombres} ${p.apellidos}`}
+                pagos={pagos}
+                puedeCrear={puedeUI(usuaria.rol, "pagos", "crear")}
+                puedeBorrar={puedeUI(usuaria.rol, "pagos", "borrar")}
+              />
+            ),
+          },
+        ]
+      : []),
+  ];
 
   return (
     <div className="space-y-6">
@@ -456,50 +565,7 @@ export default async function FichaPacientePage({
         </Card>
       </div>
 
-      {verConsultas && (
-        <LineaTiempo
-          pacienteId={p.id}
-          consultas={consultas}
-          puedeCrear={puedeUI(usuaria.rol, "consultas", "crear")}
-        />
-      )}
-
-      {verEvaluaciones && (
-        <ListaEvaluaciones
-          pacienteId={p.id}
-          evaluaciones={evaluaciones}
-          puedeCrear={puedeUI(usuaria.rol, "evaluaciones", "crear")}
-        />
-      )}
-
-      {verReportes && (
-        <ListaReportes
-          pacienteId={p.id}
-          telefono={p.telefono}
-          reportes={reportes}
-          puedeCrear={puedeUI(usuaria.rol, "reportes", "crear")}
-          puedeBorrar={puedeUI(usuaria.rol, "reportes", "borrar")}
-        />
-      )}
-
-      {verPagos && (
-        <PagosPaciente
-          pacienteId={p.id}
-          pacienteNombre={`${p.nombres} ${p.apellidos}`}
-          pagos={pagos}
-          puedeCrear={puedeUI(usuaria.rol, "pagos", "crear")}
-          puedeBorrar={puedeUI(usuaria.rol, "pagos", "borrar")}
-        />
-      )}
-
-      {clinico && (
-        <EstudiosHistorial
-          pacienteId={p.id}
-          estudios={estudios}
-          puedeCrear={puedeUI(usuaria.rol, "estudios", "crear")}
-          puedeBorrar={puedeUI(usuaria.rol, "estudios", "borrar")}
-        />
-      )}
+      {panelesHistorial.length > 0 && <HistorialPaciente paneles={panelesHistorial} />}
 
       {(p.referido_por || p.notas) && (
         <Card>
