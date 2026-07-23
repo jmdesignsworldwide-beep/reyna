@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { Card } from "@/components/ui/Card";
 import { HeartMark } from "@/components/ui/HeartMark";
+import { EstadoVacio } from "@/components/ui/EstadoVacio";
+import { LinkPrimario } from "@/components/ui/LinkPrimario";
 import { AccionesReporte } from "@/components/reportes/AccionesReporte";
 import { ETIQUETA_TIPO_REPORTE } from "@/lib/reportes";
 import { formatearFechaHora } from "@/lib/formato";
@@ -62,23 +64,18 @@ export function ListaReportes({
       </div>
 
       {reportes.length === 0 ? (
-        <div className="flex flex-col items-center gap-3 py-10 text-center">
-          <span className="flex h-14 w-14 items-center justify-center rounded-full bg-[var(--tarjeta)]">
-            <HeartMark className="h-7 w-7 animate-heart-pulse" />
-          </span>
-          <p className="max-w-sm text-sm text-texto-secundario">
-            Aún no hay reportes para este paciente. Genera el primero —resumen de consulta, resultado
-            de estudio o reporte general— y compártelo en PDF o por WhatsApp.
-          </p>
-          {puedeCrear && (
-            <Link
-              href={`/panel/pacientes/${pacienteId}/reportes/nueva`}
-              className="mt-1 rounded-suave border border-[var(--borde)] px-4 py-2 text-sm font-medium text-rosa-principal transition-colors hover:border-rosa-hover"
-            >
-              Generar el primer reporte
-            </Link>
-          )}
-        </div>
+        <EstadoVacio
+          compacto
+          titulo="Sin reportes"
+          texto="Genera el primero —resumen de consulta, resultado de estudio o reporte general— y compártelo en PDF o por WhatsApp."
+          accion={
+            puedeCrear ? (
+              <LinkPrimario href={`/panel/pacientes/${pacienteId}/reportes/nueva`}>
+                ＋ Generar reporte
+              </LinkPrimario>
+            ) : undefined
+          }
+        />
       ) : (
         <ul className="space-y-3">
           {reportes.map((r) => {

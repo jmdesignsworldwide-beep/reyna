@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { EstadoVacio } from "@/components/ui/EstadoVacio";
+import { LinkPrimario } from "@/components/ui/LinkPrimario";
 import Link from "next/link";
 import { requerirUsuaria } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
@@ -125,13 +126,18 @@ export default async function PacientesPage({
       <BuscadorPacientes inicial={q} />
 
       {lista.length === 0 ? (
-        <Card>
+        <Card className="!p-0">
           <EstadoVacio
             titulo={q ? "Sin resultados" : "Aún no hay pacientes"}
             texto={
               q
                 ? "No se encontraron pacientes con ese criterio. Prueba con otro nombre o cédula."
-                : "Registra tu primer paciente para empezar a construir su historia clínica."
+                : "Registra tu primer paciente para empezar a construir su historia clínica cardiovascular."
+            }
+            accion={
+              !q && puedeCrear ? (
+                <LinkPrimario href="/panel/pacientes/nuevo">＋ Registrar paciente</LinkPrimario>
+              ) : undefined
             }
           />
         </Card>

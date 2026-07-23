@@ -1,6 +1,7 @@
 "use client";
 
 import { TablaGlobal, type FilaGlobal } from "@/components/global/TablaGlobal";
+import { LinkPrimario } from "@/components/ui/LinkPrimario";
 import { AccionesReporte } from "@/components/reportes/AccionesReporte";
 import { ETIQUETA_TIPO_REPORTE } from "@/lib/reportes";
 import { formatearFecha } from "@/lib/formato";
@@ -33,7 +34,9 @@ export function ReportesGlobal({
       titulo="Reportes"
       filas={filas}
       sustantivo={["reporte", "reportes"]}
-      vacioTexto="Aún no hay reportes generados. Se crean desde la ficha de cada paciente."
+      vacioTitulo="Aún no hay reportes"
+      vacioTexto="Los reportes médicos (resumen de consulta, resultado de estudio, reporte general) se generan desde la ficha del paciente y se comparten en PDF o WhatsApp."
+      vacioAccion={<LinkPrimario href="/panel/pacientes">Ir a Pacientes →</LinkPrimario>}
       filtroTipo={{
         etiqueta: "Tipo",
         opciones: Object.entries(ETIQUETA_TIPO_REPORTE).map(([valor, texto]) => ({ valor, texto })),

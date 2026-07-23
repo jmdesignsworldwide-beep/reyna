@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { Card } from "@/components/ui/Card";
 import { HeartMark } from "@/components/ui/HeartMark";
+import { EstadoVacio } from "@/components/ui/EstadoVacio";
+import { LinkPrimario } from "@/components/ui/LinkPrimario";
 import { ETIQUETA_ESTADO_EVALUACION, riesgoCV } from "@/lib/evaluaciones";
 import { formatearFecha } from "@/lib/formato";
 import type { Evaluacion } from "@/types/database";
@@ -41,12 +43,18 @@ export function ListaEvaluaciones({
       </div>
 
       {evaluaciones.length === 0 ? (
-        <div className="flex flex-col items-center gap-2 py-8 text-center">
-          <HeartMark className="h-8 w-8 opacity-70" />
-          <p className="text-sm text-texto-secundario">
-            Aún no hay evaluaciones formales para este paciente.
-          </p>
-        </div>
+        <EstadoVacio
+          compacto
+          titulo="Sin evaluaciones"
+          texto="Este paciente aún no tiene evaluaciones cardiológicas formales. Crea la primera y fírmala para generar su documento sellado."
+          accion={
+            puedeCrear ? (
+              <LinkPrimario href={`/panel/pacientes/${pacienteId}/evaluaciones/nueva`}>
+                ＋ Nueva evaluación
+              </LinkPrimario>
+            ) : undefined
+          }
+        />
       ) : (
         <ul className="space-y-2.5">
           {evaluaciones.map((ev) => {

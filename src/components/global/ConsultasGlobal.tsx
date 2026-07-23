@@ -1,6 +1,7 @@
 "use client";
 
 import { TablaGlobal, type FilaGlobal } from "@/components/global/TablaGlobal";
+import { LinkPrimario } from "@/components/ui/LinkPrimario";
 import { BotonEliminar } from "@/components/global/BotonEliminar";
 import { eliminarConsulta } from "@/app/panel/consultas/acciones";
 import { ETIQUETA_TIPO_CONSULTA, TIPOS_CONSULTA_CLINICA } from "@/lib/consultas";
@@ -26,7 +27,9 @@ export function ConsultasGlobal({
       titulo="Consultas"
       filas={filas}
       sustantivo={["consulta", "consultas"]}
-      vacioTexto="Aún no hay consultas registradas. Se crean desde la ficha de cada paciente."
+      vacioTitulo="Aún no hay consultas"
+      vacioTexto="Las consultas se registran desde la ficha de cada paciente. Abre un paciente y crea su primera consulta de seguimiento."
+      vacioAccion={<LinkPrimario href="/panel/pacientes">Ir a Pacientes →</LinkPrimario>}
       filtroTipo={{
         etiqueta: "Tipo",
         opciones: TIPOS_CONSULTA_CLINICA.map((t) => ({ valor: t.valor, texto: t.texto })),
