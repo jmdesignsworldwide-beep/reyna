@@ -28,6 +28,7 @@ export function PanelFirma({
   const [pacienteAcepto, setPacienteAcepto] = useState(false);
   const [pacienteNombre, setPacienteNombre] = useState("");
   const [cargando, setCargando] = useState(false);
+  const [confirmar, setConfirmar] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   // ---------- Ya firmada: sello + descarga ----------
@@ -97,12 +98,6 @@ export function PanelFirma({
   }
 
   async function firmar() {
-    if (
-      !window.confirm(
-        "Al firmar, el documento se sella y NO se podrá modificar ni eliminar. ¿Continuar?",
-      )
-    )
-      return;
     setError(null);
     setCargando(true);
     const fd = new FormData();
@@ -185,9 +180,24 @@ export function PanelFirma({
         )}
 
         <div className="mt-5">
-          <Button onClick={firmar} cargando={cargando}>
-            Firmar y sellar documento
-          </Button>
+          {confirmar ? (
+            <div className="rounded-suave border border-estado-advertencia/50 bg-[#E8A13C14] p-4">
+              <p className="text-sm text-texto-principal">
+                Al firmar, el documento se <strong>sella</strong> y{" "}
+                <strong>no se podrá modificar ni eliminar</strong>. ¿Continuar?
+              </p>
+              <div className="mt-3 flex flex-wrap gap-2">
+                <Button onClick={firmar} cargando={cargando}>
+                  Sí, firmar y sellar
+                </Button>
+                <Button variante="secundario" onClick={() => setConfirmar(false)} disabled={cargando}>
+                  Cancelar
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <Button onClick={() => setConfirmar(true)}>Firmar y sellar documento</Button>
+          )}
         </div>
       </Card>
     </motion.div>

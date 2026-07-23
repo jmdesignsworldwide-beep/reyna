@@ -1,5 +1,6 @@
 "use client";
 import { EstadoVacio } from "@/components/ui/EstadoVacio";
+import { BotonEliminar } from "@/components/global/BotonEliminar";
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
@@ -40,7 +41,6 @@ export function GestorGastos({
   const [error, setError] = useState<string | null>(null);
   const [gestionCat, setGestionCat] = useState(false);
   const [nuevaCat, setNuevaCat] = useState("");
-  const [ocupadoId, setOcupadoId] = useState<string | null>(null);
 
   const hoy = new Date().toISOString().slice(0, 10);
   const activas = categorias.filter((c) => c.activo);
@@ -58,23 +58,11 @@ export function GestorGastos({
     router.refresh();
   }
 
-  async function borrar(id: string) {
-    if (!window.confirm("¿Eliminar este gasto? No se puede deshacer.")) return;
-    setOcupadoId(id);
-    const res = await eliminarGasto(id);
-    setOcupadoId(null);
-    if (!res.ok) {
-      window.alert(res.error ?? "No se pudo eliminar.");
-      return;
-    }
-    router.refresh();
-  }
-
   async function agregarCat() {
     if (nuevaCat.trim().length < 2) return;
     const res = await crearCategoria(nuevaCat.trim());
     if (!res.ok) {
-      window.alert(res.error ?? "No se pudo crear la categoría.");
+      setError(res.error ?? "No se pudo crear la categoría.");
       return;
     }
     setNuevaCat("");
@@ -83,7 +71,7 @@ export function GestorGastos({
 
   async function alternarCat(id: string, activo: boolean) {
     const res = await archivarCategoria(id, activo);
-    if (!res.ok) window.alert(res.error ?? "Error");
+    if (!res.ok) setError(res.error ?? "No se pudo actualizar la categoría.");
     else router.refresh();
   }
 
@@ -137,6 +125,11 @@ export function GestorGastos({
               Agregar
             </Button>
           </div>
+          {error && (
+            <div className="mt-3">
+              <Alerta tono="urgente">{error}</Alerta>
+            </div>
+          )}
         </Card>
       )}
 
@@ -181,13 +174,7 @@ export function GestorGastos({
                             Comprobante ↗
                           </a>
                         )}
-                        <button
-                          onClick={() => borrar(g.id)}
-                          disabled={ocupadoId === g.id}
-                          className="text-xs text-texto-secundario transition-colors hover:text-estado-urgente disabled:opacity-50"
-                        >
-                          Eliminar
-                        </button>
+                        <BotonEliminar onEliminar={() => eliminarGasto(g.id)} />
                       </div>
                     </td>
                   </tr>

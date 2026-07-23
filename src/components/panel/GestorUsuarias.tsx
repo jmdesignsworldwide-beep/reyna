@@ -22,6 +22,7 @@ export function GestorUsuarias({
   const router = useRouter();
   const [abrirCrear, setAbrirCrear] = useState(false);
   const [ocupadaId, setOcupadaId] = useState<string | null>(null);
+  const [confirmarId, setConfirmarId] = useState<string | null>(null);
   const [mensaje, setMensaje] = useState<{ tono: "exito" | "urgente"; texto: string } | null>(null);
 
   function notificar(tono: "exito" | "urgente", texto: string) {
@@ -68,12 +69,7 @@ export function GestorUsuarias({
   }
 
   async function eliminar(u: UsuariaLista) {
-    if (
-      !window.confirm(
-        `¿Eliminar la cuenta de ${u.nombre_completo}? Esta acción no se puede deshacer.`,
-      )
-    )
-      return;
+    setConfirmarId(null);
     setOcupadaId(u.id);
     const res = await fetch(`/api/admin/usuarias/${u.id}`, { method: "DELETE" });
     setOcupadaId(null);
@@ -190,21 +186,42 @@ export function GestorUsuarias({
                         >
                           {u.activo ? "Desactivar" : "Activar"}
                         </button>
-                        <button
-                          type="button"
-                          onClick={() => eliminar(u)}
-                          disabled={ocupada || protegida || u.id === actualId}
-                          className="rounded-suave border border-[var(--borde)] px-2.5 py-1.5 text-xs text-texto-secundario transition-colors hover:border-estado-urgente hover:text-estado-urgente disabled:cursor-not-allowed disabled:opacity-50"
-                          title={
-                            u.id === actualId
-                              ? "No puedes eliminar tu propia cuenta"
-                              : protegida
-                                ? "Protegido: último administrador"
-                                : undefined
-                          }
-                        >
-                          Eliminar
-                        </button>
+                        {confirmarId === u.id ? (
+                          <span className="inline-flex items-center gap-1.5">
+                            <button
+                              type="button"
+                              onClick={() => eliminar(u)}
+                              disabled={ocupada}
+                              className="rounded-suave px-2.5 py-1.5 text-xs font-medium text-white transition-transform active:scale-[0.98] disabled:opacity-60"
+                              style={{ background: "#E0567A" }}
+                            >
+                              {ocupada ? "…" : "Confirmar"}
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setConfirmarId(null)}
+                              className="rounded-suave border border-[var(--borde)] px-2.5 py-1.5 text-xs text-texto-secundario"
+                            >
+                              Cancelar
+                            </button>
+                          </span>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() => setConfirmarId(u.id)}
+                            disabled={ocupada || protegida || u.id === actualId}
+                            className="rounded-suave border border-[var(--borde)] px-2.5 py-1.5 text-xs text-texto-secundario transition-colors active:scale-[0.98] hover:border-estado-urgente hover:text-estado-urgente disabled:cursor-not-allowed disabled:opacity-50"
+                            title={
+                              u.id === actualId
+                                ? "No puedes eliminar tu propia cuenta"
+                                : protegida
+                                  ? "Protegido: último administrador"
+                                  : undefined
+                            }
+                          >
+                            Eliminar
+                          </button>
+                        )}
                       </div>
                     </td>
                   </tr>
