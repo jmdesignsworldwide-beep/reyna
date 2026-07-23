@@ -75,7 +75,7 @@ export function DashboardCliente({
         </h1>
         <p className="mt-1 text-texto-secundario">
           {ETIQUETAS_ROL[rol]} ·{" "}
-          <span className="capitalize">{fechaLarga(new Date())}</span>
+          <span className="first-letter:uppercase">{fechaLarga(new Date())}</span>
         </p>
       </header>
 

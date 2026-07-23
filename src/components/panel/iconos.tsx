@@ -66,6 +66,36 @@ export function Icono({ nombre, className = "h-5 w-5" }: { nombre: string; class
           <path d="M5 20a7 7 0 0 1 14 0" />
         </svg>
       );
+    case "consultas":
+      return (
+        <svg {...props}>
+          <path d="M6 3h9l4 4v14a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z" />
+          <path d="M14 3v4h4" />
+          <path d="M8 13.5h1.6l1-2 1.4 4 1-2H16" />
+        </svg>
+      );
+    case "evaluaciones":
+      return (
+        <svg {...props}>
+          <path d="M12 3 5 6v5c0 4.2 2.9 7.6 7 9 4.1-1.4 7-4.8 7-9V6l-7-3z" />
+          <path d="m9 11.5 2 2 3.5-3.8" />
+        </svg>
+      );
+    case "estudios":
+      return (
+        <svg {...props}>
+          <rect x="2.5" y="5" width="19" height="14" rx="2" />
+          <path d="M5 12h3l1.5-3 2.5 6 1.5-3H19" />
+        </svg>
+      );
+    case "reportes":
+      return (
+        <svg {...props}>
+          <path d="M7 3h7l4 4v13a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z" />
+          <path d="M13 3v4h4" />
+          <path d="M9 12.5h6M9 16h4" />
+        </svg>
+      );
     case "salir":
       return (
         <svg {...props}>
