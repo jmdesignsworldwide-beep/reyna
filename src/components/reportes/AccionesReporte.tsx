@@ -23,22 +23,25 @@ export function AccionesReporte({
   const router = useRouter();
   const [pendiente, startTransition] = useTransition();
   const [confirmar, setConfirmar] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const waUrl = resumen ? enlaceWhatsApp(telefono, resumen) : null;
 
   function borrar() {
+    setError(null);
     startTransition(async () => {
       const r = await eliminarReporte(reporteId, pacienteId);
       if (r.ok) router.refresh();
       else {
         setConfirmar(false);
-        alert(r.error ?? "No se pudo eliminar el reporte.");
+        setError(r.error ?? "No se pudo eliminar el reporte.");
       }
     });
   }
 
   return (
     <div className="flex flex-wrap items-center gap-2">
+      {error && <span className="w-full text-xs text-estado-urgente">{error}</span>}
       {pdfUrl ? (
         <a
           href={pdfUrl}

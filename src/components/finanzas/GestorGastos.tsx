@@ -1,4 +1,6 @@
 "use client";
+import { EstadoVacio } from "@/components/ui/EstadoVacio";
+import { BotonEliminar } from "@/components/global/BotonEliminar";
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
@@ -39,7 +41,6 @@ export function GestorGastos({
   const [error, setError] = useState<string | null>(null);
   const [gestionCat, setGestionCat] = useState(false);
   const [nuevaCat, setNuevaCat] = useState("");
-  const [ocupadoId, setOcupadoId] = useState<string | null>(null);
 
   const hoy = new Date().toISOString().slice(0, 10);
   const activas = categorias.filter((c) => c.activo);
@@ -57,23 +58,11 @@ export function GestorGastos({
     router.refresh();
   }
 
-  async function borrar(id: string) {
-    if (!window.confirm("¿Eliminar este gasto? No se puede deshacer.")) return;
-    setOcupadoId(id);
-    const res = await eliminarGasto(id);
-    setOcupadoId(null);
-    if (!res.ok) {
-      window.alert(res.error ?? "No se pudo eliminar.");
-      return;
-    }
-    router.refresh();
-  }
-
   async function agregarCat() {
     if (nuevaCat.trim().length < 2) return;
     const res = await crearCategoria(nuevaCat.trim());
     if (!res.ok) {
-      window.alert(res.error ?? "No se pudo crear la categoría.");
+      setError(res.error ?? "No se pudo crear la categoría.");
       return;
     }
     setNuevaCat("");
@@ -82,7 +71,7 @@ export function GestorGastos({
 
   async function alternarCat(id: string, activo: boolean) {
     const res = await archivarCategoria(id, activo);
-    if (!res.ok) window.alert(res.error ?? "Error");
+    if (!res.ok) setError(res.error ?? "No se pudo actualizar la categoría.");
     else router.refresh();
   }
 
@@ -136,65 +125,100 @@ export function GestorGastos({
               Agregar
             </Button>
           </div>
+          {error && (
+            <div className="mt-3">
+              <Alerta tono="urgente">{error}</Alerta>
+            </div>
+          )}
         </Card>
       )}
 
       {gastos.length === 0 ? (
         <Card>
-          <p className="text-sm text-texto-secundario">Aún no hay gastos registrados.</p>
+          <EstadoVacio compacto texto="Aún no hay gastos registrados en el consultorio. Anota el primero para llevar el control." />
         </Card>
       ) : (
-        <Card className="overflow-hidden !p-0">
-          <div className="overflow-x-auto">
-            <table className="w-full min-w-[640px] text-left text-sm">
-              <thead>
-                <tr className="border-b border-[var(--borde)] text-xs uppercase tracking-wide text-texto-secundario">
-                  <th className="px-5 py-3.5 font-medium">Fecha</th>
-                  <th className="px-5 py-3.5 font-medium">Categoría</th>
-                  <th className="px-5 py-3.5 font-medium">Método</th>
-                  <th className="px-5 py-3.5 font-medium text-right">Monto</th>
-                  <th className="px-5 py-3.5 font-medium text-right">Acciones</th>
-                </tr>
-              </thead>
-              <tbody>
-                {gastos.map((g) => (
-                  <tr key={g.id} className="border-b border-[var(--borde)] last:border-0 hover:bg-[var(--superficie-suave)]">
-                    <td className="px-5 py-3 text-texto-secundario">{formatearFecha(g.fecha)}</td>
-                    <td className="px-5 py-3">
-                      <span className="text-texto-principal">{g.categoria ?? "Sin categoría"}</span>
-                      {g.nota && <span className="block text-xs text-texto-secundario">{g.nota}</span>}
-                    </td>
-                    <td className="px-5 py-3 text-texto-secundario">{ETIQUETA_METODO[g.metodo_pago]}</td>
-                    <td className="px-5 py-3 text-right font-medium text-texto-principal">
-                      {formatearRD(g.monto)}
-                    </td>
-                    <td className="px-5 py-3 text-right">
-                      <div className="flex items-center justify-end gap-3">
-                        {g.comprobante_url && (
-                          <a
-                            href={g.comprobante_url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-xs text-rosa-principal hover:text-rosa-hover"
-                          >
-                            Comprobante ↗
-                          </a>
-                        )}
-                        <button
-                          onClick={() => borrar(g.id)}
-                          disabled={ocupadoId === g.id}
-                          className="text-xs text-texto-secundario transition-colors hover:text-estado-urgente disabled:opacity-50"
-                        >
-                          Eliminar
-                        </button>
-                      </div>
-                    </td>
+        <>
+          {/* Escritorio: tabla */}
+          <Card className="hidden overflow-hidden !p-0 md:block">
+            <div className="overflow-x-auto">
+              <table className="w-full min-w-[640px] text-left text-sm">
+                <thead>
+                  <tr className="border-b border-[var(--borde)] text-xs uppercase tracking-wide text-texto-secundario">
+                    <th className="px-5 py-3.5 font-medium">Fecha</th>
+                    <th className="px-5 py-3.5 font-medium">Categoría</th>
+                    <th className="px-5 py-3.5 font-medium">Método</th>
+                    <th className="px-5 py-3.5 font-medium text-right">Monto</th>
+                    <th className="px-5 py-3.5 font-medium text-right">Acciones</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {gastos.map((g) => (
+                    <tr key={g.id} className="border-b border-[var(--borde)] last:border-0 hover:bg-[var(--superficie-suave)]">
+                      <td className="px-5 py-3 text-texto-secundario">{formatearFecha(g.fecha)}</td>
+                      <td className="px-5 py-3">
+                        <span className="text-texto-principal">{g.categoria ?? "Sin categoría"}</span>
+                        {g.nota && <span className="block text-xs text-texto-secundario">{g.nota}</span>}
+                      </td>
+                      <td className="px-5 py-3 text-texto-secundario">{ETIQUETA_METODO[g.metodo_pago]}</td>
+                      <td className="px-5 py-3 text-right font-medium text-texto-principal">
+                        {formatearRD(g.monto)}
+                      </td>
+                      <td className="px-5 py-3 text-right">
+                        <div className="flex items-center justify-end gap-3">
+                          {g.comprobante_url && (
+                            <a
+                              href={g.comprobante_url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-xs text-rosa-principal hover:text-rosa-hover"
+                            >
+                              Comprobante ↗
+                            </a>
+                          )}
+                          <BotonEliminar onEliminar={() => eliminarGasto(g.id)} />
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </Card>
+
+          {/* Móvil: tarjetas apiladas */}
+          <div className="space-y-3 md:hidden">
+            {gastos.map((g) => (
+              <Card key={g.id} className="!p-4">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <p className="font-medium text-texto-principal">{g.categoria ?? "Sin categoría"}</p>
+                    {g.nota && <p className="text-xs text-texto-secundario">{g.nota}</p>}
+                  </div>
+                  <p className="flex-none font-display text-lg font-semibold text-texto-principal">
+                    {formatearRD(g.monto)}
+                  </p>
+                </div>
+                <div className="mt-2 flex items-center justify-between gap-2 text-xs text-texto-secundario">
+                  <span>{formatearFecha(g.fecha)} · {ETIQUETA_METODO[g.metodo_pago]}</span>
+                </div>
+                <div className="mt-3 flex items-center justify-end gap-3">
+                  {g.comprobante_url && (
+                    <a
+                      href={g.comprobante_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-xs text-rosa-principal hover:text-rosa-hover"
+                    >
+                      Comprobante ↗
+                    </a>
+                  )}
+                  <BotonEliminar onEliminar={() => eliminarGasto(g.id)} />
+                </div>
+              </Card>
+            ))}
           </div>
-        </Card>
+        </>
       )}
 
       <Modal titulo="Registrar gasto" abierto={abrir} onClose={() => setAbrir(false)}>

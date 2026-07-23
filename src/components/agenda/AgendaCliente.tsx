@@ -435,14 +435,16 @@ function VistaMes({
   const semanas = diasDeMes(ancla);
   return (
     <div className="tarjeta overflow-hidden !p-0">
-      <div className="grid grid-cols-7 border-b border-[var(--borde)] bg-[var(--superficie-suave)]">
+      {/* En móvil el mes se desplaza horizontalmente en vez de apretarse. */}
+      <div className="overflow-x-auto">
+      <div className="grid min-w-[720px] grid-cols-7 border-b border-[var(--borde)] bg-[var(--superficie-suave)] md:min-w-0">
         {DIAS_CORTOS.map((d) => (
           <div key={d} className="px-2 py-2 text-center text-xs font-medium text-texto-secundario">
             {d}
           </div>
         ))}
       </div>
-      <div className="grid grid-cols-7">
+      <div className="grid min-w-[720px] grid-cols-7 md:min-w-0">
         {semanas.flat().map((d) => {
           const delMes = d.getMonth() === ancla.getMonth();
           const delDia = citas
@@ -495,6 +497,7 @@ function VistaMes({
             </div>
           );
         })}
+      </div>
       </div>
     </div>
   );
@@ -578,6 +581,7 @@ function Detalle({
 }) {
   const router = useRouter();
   const [ocupado, setOcupado] = useState(false);
+  const [confBorrar, setConfBorrar] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   async function cambiar(estado: EstadoCita) {
@@ -590,11 +594,13 @@ function Detalle({
     onCerrar();
   }
   async function borrar() {
-    if (!window.confirm("¿Eliminar esta cita? No se puede deshacer.")) return;
     setOcupado(true);
     const res = await eliminarCita(cita.id);
     setOcupado(false);
-    if (!res.ok) return setError(res.error ?? "Error");
+    if (!res.ok) {
+      setConfBorrar(false);
+      return setError(res.error ?? "No se pudo eliminar la cita.");
+    }
     router.refresh();
     onCerrar();
   }
@@ -706,15 +712,32 @@ function Detalle({
             Editar
           </Button>
         )}
-        {permisos.borrar && (
-          <button
-            onClick={borrar}
-            disabled={ocupado}
-            className="rounded-suave border border-[var(--borde)] px-4 py-2.5 text-sm text-texto-secundario transition-colors hover:border-estado-urgente hover:text-estado-urgente disabled:opacity-60"
-          >
-            Eliminar
-          </button>
-        )}
+        {permisos.borrar &&
+          (confBorrar ? (
+            <span className="inline-flex items-center gap-2">
+              <button
+                onClick={borrar}
+                disabled={ocupado}
+                className="rounded-suave px-4 py-2.5 text-sm font-medium text-white transition-transform active:scale-[0.98] disabled:opacity-60"
+                style={{ background: "#E0567A" }}
+              >
+                {ocupado ? "Eliminando…" : "Confirmar"}
+              </button>
+              <button
+                onClick={() => setConfBorrar(false)}
+                className="rounded-suave border border-[var(--borde)] px-4 py-2.5 text-sm text-texto-secundario"
+              >
+                Cancelar
+              </button>
+            </span>
+          ) : (
+            <button
+              onClick={() => setConfBorrar(true)}
+              className="rounded-suave border border-[var(--borde)] px-4 py-2.5 text-sm text-texto-secundario transition-colors active:scale-[0.98] hover:border-estado-urgente hover:text-estado-urgente"
+            >
+              Eliminar
+            </button>
+          ))}
         <Button variante="fantasma" onClick={onCerrar} className="ml-auto">
           Cerrar
         </Button>

@@ -1,4 +1,6 @@
 "use client";
+import { EstadoVacio } from "@/components/ui/EstadoVacio";
+import { BotonEliminar } from "@/components/global/BotonEliminar";
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
@@ -46,7 +48,6 @@ export function PagosPaciente({
   const [abrir, setAbrir] = useState(false);
   const [cargando, setCargando] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [ocupadoId, setOcupadoId] = useState<string | null>(null);
   const hoy = new Date().toISOString().slice(0, 10);
 
   async function registrar(formData: FormData) {
@@ -60,18 +61,6 @@ export function PagosPaciente({
       return;
     }
     setAbrir(false);
-    router.refresh();
-  }
-
-  async function borrar(id: string) {
-    if (!window.confirm("¿Eliminar este pago y su recibo? No se puede deshacer.")) return;
-    setOcupadoId(id);
-    const res = await eliminarPago(id, pacienteId);
-    setOcupadoId(null);
-    if (!res.ok) {
-      window.alert(res.error ?? "No se pudo eliminar.");
-      return;
-    }
     router.refresh();
   }
 
@@ -99,7 +88,7 @@ export function PagosPaciente({
       </div>
 
       {pagos.length === 0 ? (
-        <p className="text-sm text-texto-secundario">Aún no hay pagos registrados para este paciente.</p>
+        <EstadoVacio compacto texto="Aún no hay pagos registrados para este paciente. Registra el primero y genera su recibo." />
       ) : (
         <ul className="space-y-2.5">
           {pagos.map((p) => (
@@ -137,13 +126,7 @@ export function PagosPaciente({
                   WhatsApp
                 </button>
                 {puedeBorrar && (
-                  <button
-                    onClick={() => borrar(p.id)}
-                    disabled={ocupadoId === p.id}
-                    className="text-xs text-texto-secundario transition-colors hover:text-estado-urgente disabled:opacity-50"
-                  >
-                    Eliminar
-                  </button>
+                  <BotonEliminar onEliminar={() => eliminarPago(p.id, pacienteId)} />
                 )}
               </div>
             </li>

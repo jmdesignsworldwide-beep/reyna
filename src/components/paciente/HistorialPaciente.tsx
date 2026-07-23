@@ -21,15 +21,15 @@ export function HistorialPaciente({ paneles }: { paneles: PanelHistorial[] }) {
         <span>Historial del paciente</span>
       </div>
 
-      {/* Pestañas */}
-      <div className="mb-4 flex flex-wrap gap-1.5 rounded-full border border-[var(--borde)] bg-[var(--superficie)] p-1.5">
+      {/* Pestañas (scroll horizontal en móvil, sin romper el pill) */}
+      <div className="mb-4 flex gap-1.5 overflow-x-auto rounded-full border border-[var(--borde)] bg-[var(--superficie)] p-1.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         {paneles.map((p) => {
           const on = p.clave === activo;
           return (
             <button
               key={p.clave}
               onClick={() => setActivo(p.clave)}
-              className={`rounded-full px-4 py-1.5 text-sm font-medium transition-all ${
+              className={`flex-none whitespace-nowrap rounded-full px-4 py-1.5 text-sm font-medium transition-all active:scale-[0.98] ${
                 on
                   ? "bg-[linear-gradient(120deg,var(--rosa-principal),var(--rosa-medio))] text-white shadow-tarjeta"
                   : "text-texto-secundario hover:text-rosa-principal"

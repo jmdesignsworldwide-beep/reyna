@@ -27,7 +27,7 @@ export const Button = forwardRef<HTMLButtonElement, Props>(function Button(
     <button
       ref={ref}
       disabled={disabled || cargando}
-      className={`inline-flex items-center justify-center gap-2 rounded-suave px-4 py-2.5 text-sm font-medium transition-all duration-300 disabled:cursor-not-allowed disabled:opacity-60 ${estilos[variante]} ${className}`}
+      className={`inline-flex items-center justify-center gap-2 rounded-suave px-4 py-2.5 text-sm font-medium transition-all duration-300 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60 disabled:active:scale-100 ${estilos[variante]} ${className}`}
       {...rest}
     >
       {cargando && (

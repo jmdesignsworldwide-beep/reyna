@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { EstadoVacio } from "@/components/ui/EstadoVacio";
 import Link from "next/link";
 import { requerirRol } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
@@ -135,7 +136,7 @@ export default async function CierrePage({
             Ingresos por concepto
           </h2>
           {porTipo.length === 0 ? (
-            <p className="text-sm text-texto-secundario">Sin pagos hoy.</p>
+            <EstadoVacio compacto texto="Sin pagos registrados hoy. Los cobros del día aparecerán aquí." />
           ) : (
             <ul className="space-y-2">
               {porTipo.map((t) => (
@@ -152,7 +153,7 @@ export default async function CierrePage({
             Ingresos por método
           </h2>
           {porMetodo.length === 0 ? (
-            <p className="text-sm text-texto-secundario">Sin pagos hoy.</p>
+            <EstadoVacio compacto texto="Sin pagos registrados hoy. Los cobros del día aparecerán aquí." />
           ) : (
             <ul className="space-y-2">
               {porMetodo.map((m) => (
