@@ -65,24 +65,39 @@ export function puedeUI(rol: UserRole, recurso: string, accion: Accion): boolean
   return MATRIZ[rol]?.[recurso]?.includes(accion) ?? false;
 }
 
+export type SeccionNav = "clinica" | "negocio" | "config";
+
 export interface ItemNavegacion {
   href: string;
   etiqueta: string;
   recurso: string;
+  /** Sección del menú donde se agrupa el ítem. */
+  seccion: SeccionNav;
   /** Roles que ven el ítem en el menú (control fino se refuerza server-side). */
   roles: UserRole[];
   icono: string;
 }
 
+/** Encabezados visibles de cada sección del menú (en orden). */
+export const SECCIONES_NAV: { clave: SeccionNav; etiqueta: string }[] = [
+  { clave: "clinica", etiqueta: "Clínica" },
+  { clave: "negocio", etiqueta: "Negocio" },
+  { clave: "config", etiqueta: "Configuración" },
+];
+
 /**
- * Navegación del panel. `roles` decide visibilidad en el sidebar; cada
- * página además revalida con requerirRol() en el servidor.
+ * Navegación del panel, agrupada por sección. `roles` decide visibilidad en el
+ * sidebar; cada página además revalida con requerirRol()/puede() en el servidor.
+ * Las vistas clínicas globales son solo para roles con acceso clínico
+ * (admin y asistente): recepción NO ve data clínica.
  */
 export const NAVEGACION: ItemNavegacion[] = [
+  // ---- Clínica ----
   {
     href: "/panel",
     etiqueta: "Dashboard",
     recurso: "dashboard",
+    seccion: "clinica",
     roles: ["admin", "recepcion", "asistente"],
     icono: "inicio",
   },
@@ -90,6 +105,7 @@ export const NAVEGACION: ItemNavegacion[] = [
     href: "/panel/pacientes",
     etiqueta: "Pacientes",
     recurso: "pacientes",
+    seccion: "clinica",
     roles: ["admin", "recepcion", "asistente"],
     icono: "pacientes",
   },
@@ -97,20 +113,57 @@ export const NAVEGACION: ItemNavegacion[] = [
     href: "/panel/agenda",
     etiqueta: "Agenda",
     recurso: "agenda",
+    seccion: "clinica",
     roles: ["admin", "recepcion", "asistente"],
     icono: "agenda",
   },
   {
+    href: "/panel/consultas",
+    etiqueta: "Consultas",
+    recurso: "consultas",
+    seccion: "clinica",
+    roles: ["admin", "asistente"],
+    icono: "consultas",
+  },
+  {
+    href: "/panel/evaluaciones",
+    etiqueta: "Evaluaciones",
+    recurso: "evaluaciones",
+    seccion: "clinica",
+    roles: ["admin", "asistente"],
+    icono: "evaluaciones",
+  },
+  {
+    href: "/panel/estudios",
+    etiqueta: "Estudios",
+    recurso: "estudios",
+    seccion: "clinica",
+    roles: ["admin", "asistente"],
+    icono: "estudios",
+  },
+  {
+    href: "/panel/reportes",
+    etiqueta: "Reportes",
+    recurso: "reportes",
+    seccion: "clinica",
+    roles: ["admin", "asistente"],
+    icono: "reportes",
+  },
+  // ---- Negocio ----
+  {
     href: "/panel/finanzas",
     etiqueta: "Finanzas",
     recurso: "finanzas",
+    seccion: "negocio",
     roles: ["admin"],
     icono: "finanzas",
   },
+  // ---- Configuración ----
   {
     href: "/panel/usuarios",
     etiqueta: "Usuarios",
     recurso: "usuarios",
+    seccion: "config",
     roles: ["admin"],
     icono: "usuarios",
   },
@@ -118,6 +171,7 @@ export const NAVEGACION: ItemNavegacion[] = [
     href: "/panel/auditoria",
     etiqueta: "Auditoría",
     recurso: "auditoria",
+    seccion: "config",
     roles: ["admin"],
     icono: "auditoria",
   },
@@ -125,6 +179,7 @@ export const NAVEGACION: ItemNavegacion[] = [
     href: "/panel/cuenta",
     etiqueta: "Mi cuenta",
     recurso: "cuenta",
+    seccion: "config",
     roles: ["admin", "recepcion", "asistente"],
     icono: "cuenta",
   },

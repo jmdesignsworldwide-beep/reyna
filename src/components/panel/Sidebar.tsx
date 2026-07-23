@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
-import { NAVEGACION } from "@/lib/permissions";
+import { NAVEGACION, SECCIONES_NAV } from "@/lib/permissions";
 import { ETIQUETAS_ROL } from "@/lib/permissions";
 import { HeartMark } from "@/components/ui/HeartMark";
 import { Icono } from "@/components/panel/iconos";
@@ -53,28 +53,52 @@ export function Sidebar({
         )}
       </div>
 
-      {/* Navegación */}
-      <nav className="flex-1 space-y-1 overflow-y-auto px-3 py-4">
-        {items.map((item) => {
-          const activo =
-            pathname === item.href ||
-            (item.href !== "/panel" && pathname.startsWith(item.href));
+      {/* Navegación por secciones */}
+      <nav className="flex-1 overflow-y-auto px-3 py-4">
+        {SECCIONES_NAV.map((seccion, si) => {
+          const deSeccion = items.filter((i) => i.seccion === seccion.clave);
+          if (deSeccion.length === 0) return null;
           return (
-            <Link
-              key={item.href}
-              href={item.href}
-              title={colapsado ? item.etiqueta : undefined}
-              className={`group flex items-center gap-3 rounded-suave px-3 py-2.5 text-sm font-medium transition-all ${
-                activo
-                  ? "bg-[var(--tarjeta)] text-rosa-principal shadow-[inset_2px_0_0_var(--rosa-principal)]"
-                  : "text-texto-secundario hover:bg-[var(--superficie-suave)] hover:text-rosa-principal"
-              }`}
+            <div
+              key={seccion.clave}
+              className={
+                seccion.clave === "config"
+                  ? "mt-4 border-t border-[var(--borde)] pt-4"
+                  : si === 0
+                    ? ""
+                    : "mt-4"
+              }
             >
-              <span className="flex-none">
-                <Icono nombre={item.icono} />
-              </span>
-              {!colapsado && <span className="truncate">{item.etiqueta}</span>}
-            </Link>
+              {!colapsado && (
+                <p className="px-3 pb-1.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-texto-secundario/70">
+                  {seccion.etiqueta}
+                </p>
+              )}
+              <div className="space-y-1">
+                {deSeccion.map((item) => {
+                  const activo =
+                    pathname === item.href ||
+                    (item.href !== "/panel" && pathname.startsWith(item.href));
+                  return (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      title={colapsado ? item.etiqueta : undefined}
+                      className={`group flex items-center gap-3 rounded-suave px-3 py-2.5 text-sm font-medium transition-all ${
+                        activo
+                          ? "bg-[var(--tarjeta)] text-rosa-principal shadow-[inset_2px_0_0_var(--rosa-principal)]"
+                          : "text-texto-secundario hover:bg-[var(--superficie-suave)] hover:text-rosa-principal"
+                      }`}
+                    >
+                      <span className="flex-none">
+                        <Icono nombre={item.icono} />
+                      </span>
+                      {!colapsado && <span className="truncate">{item.etiqueta}</span>}
+                    </Link>
+                  );
+                })}
+              </div>
+            </div>
           );
         })}
       </nav>
