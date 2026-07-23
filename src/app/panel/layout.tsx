@@ -20,7 +20,7 @@ export default async function PanelLayout({
       <Sidebar rol={usuaria.rol} nombre={usuaria.nombre_completo} />
 
       <div className="flex min-w-0 flex-1 flex-col">
-        <header className="sticky top-0 z-10 flex items-center justify-between border-b border-[var(--borde)] bg-[var(--fondo)]/85 px-6 py-3.5 backdrop-blur-md">
+        <header className="sticky top-0 z-10 flex items-center justify-between border-b border-[var(--borde)] bg-[var(--fondo)]/85 py-3.5 pl-16 pr-4 backdrop-blur-md md:px-6">
           <p className="text-sm text-texto-secundario">
             <Saludo />,{" "}
             <span className="font-medium text-texto-principal">
