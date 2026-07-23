@@ -136,6 +136,41 @@
 }
 
 /* ============================================================
+   Esqueletos de carga (shimmer) — nunca spinners genéricos
+   ============================================================ */
+@layer components {
+  .esqueleto {
+    position: relative;
+    overflow: hidden;
+    border-radius: 8px;
+    background: var(--superficie-suave);
+  }
+  .esqueleto::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    transform: translateX(-100%);
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgba(255, 255, 255, 0.10),
+      transparent
+    );
+    animation: esqueleto-brillo 1.5s ease-in-out infinite;
+  }
+}
+@keyframes esqueleto-brillo {
+  100% {
+    transform: translateX(100%);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .esqueleto::after {
+    animation: none;
+  }
+}
+
+/* ============================================================
    Animaciones premium — login y bienvenida cinemática
    ============================================================ */
 @keyframes deriva-1 {
